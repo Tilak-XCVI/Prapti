@@ -269,15 +269,16 @@ body:has(.nightwrap){background:#0F0A08}
 .sky.t-day{--s1:#F6D6A8;--s2:#FAE6CB;--sun:rgba(255,246,222,.95);--haze:rgba(240,190,120,.4)}
 .sky.t-eve{--s1:#E9A58E;--s2:#F3CDB7;--sun:rgba(255,214,190,.9);--haze:rgba(200,120,150,.35)}
 .sky.t-night{--s1:#CFC3DD;--s2:#E6DDE8;--sun:rgba(255,248,236,.8);--haze:rgba(140,130,190,.35)}
-.sky{position:relative;margin-inline:calc(var(--gut) * -1);margin-top:calc(-22px - env(safe-area-inset-top,0px));padding:calc(22px + env(safe-area-inset-top,0px)) var(--gut) 26px;overflow:hidden;display:flex;flex-direction:column;gap:14px;background:linear-gradient(180deg,var(--s1) 0%,var(--s2) 42%,var(--bg) 100%);isolation:isolate}
+.sky{position:relative;margin-inline:calc(var(--gut) * -1);margin-top:calc(-22px - env(safe-area-inset-top,0px));padding:calc(22px + env(safe-area-inset-top,0px)) var(--gut) 18px;display:flex;flex-direction:column;gap:14px;isolation:isolate}
+.skybg{position:absolute;left:0;right:0;top:0;bottom:-70px;z-index:0;overflow:hidden;pointer-events:none;background:linear-gradient(180deg,var(--s1) 0%,var(--s2) 45%,var(--bg) 100%);-webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent 100%);mask-image:linear-gradient(to bottom,#000 55%,transparent 100%)}
 .sky>*{position:relative;z-index:1}
-.sky .sun,.sky .haze,.sky .glow3{position:absolute;z-index:0;border-radius:50%;pointer-events:none}
-.sky .sun{width:300px;height:300px;top:-120px;right:-90px;background:radial-gradient(circle,var(--sun) 0%,rgba(255,226,190,.4) 40%,rgba(255,226,190,0) 70%);animation:drift 18s ease-in-out infinite alternate}
-.sky .haze{width:260px;height:180px;top:50px;left:-100px;background:radial-gradient(circle,var(--haze),rgba(0,0,0,0) 70%);animation:drift2 22s ease-in-out infinite alternate}
-.sky.t-eve .sun{right:auto;left:-80px;top:-70px}
+.skybg .sun,.skybg .haze,.skybg .glow3{position:absolute;z-index:0;border-radius:50%;pointer-events:none}
+.skybg .sun{width:300px;height:300px;top:-120px;right:-90px;background:radial-gradient(circle,var(--sun) 0%,rgba(255,226,190,.4) 40%,rgba(255,226,190,0) 70%);animation:drift 18s ease-in-out infinite alternate}
+.skybg .haze{width:260px;height:180px;top:50px;left:-100px;background:radial-gradient(circle,var(--haze),rgba(0,0,0,0) 70%);animation:drift2 22s ease-in-out infinite alternate}
+.sky.t-eve .skybg .sun{right:auto;left:-80px;top:-70px}
 /* third light patch plus a slow colour shift */
-.sky .glow3{width:240px;height:200px;bottom:-60px;right:10%;background:radial-gradient(circle,var(--glow3,rgba(242,160,170,.35)),rgba(0,0,0,0) 70%);animation:drift3 30s ease-in-out infinite alternate}
-.sky::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,0) 20%,rgba(255,236,214,.35) 50%,rgba(255,255,255,0) 80%);background-size:250% 100%;animation:skyshift 26s ease-in-out infinite alternate}
+.skybg .glow3{width:240px;height:200px;bottom:-60px;right:10%;background:radial-gradient(circle,var(--glow3,rgba(242,160,170,.35)),rgba(0,0,0,0) 70%);animation:drift3 30s ease-in-out infinite alternate}
+.skybg::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,0) 20%,rgba(255,236,214,.35) 50%,rgba(255,255,255,0) 80%);background-size:250% 100%;animation:skyshift 26s ease-in-out infinite alternate}
 @keyframes drift3{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-70px,-30px) scale(1.15)}100%{transform:translate(-20px,-60px) scale(.95)}}
 @keyframes skyshift{from{background-position:0% 0}to{background-position:100% 0}}
 @keyframes drift{to{transform:translate(-40px,26px) scale(1.08)}}
@@ -374,7 +375,7 @@ body:has(.nightwrap){background:#0F0A08}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .sky{--s1:#4A2A1C;--s2:#2E1D15;--sun:rgba(240,138,75,.35);--haze:rgba(162,59,79,.28);--skyInk:#E9CDB3}
 :root:not([data-theme="light"]) .sky.t-night{--s1:#2A2338;--s2:#1E1720;--sun:rgba(200,190,240,.18)}
 :root:not([data-theme="light"]) .sky .pill{background:rgba(36,26,20,.6)}}
-@media (prefers-reduced-motion: reduce){.lotusP .lp,.sky .sun,.sky .haze,.sky .glow3,.sky::before,.dsh .hero img{animation:none!important}}
+@media (prefers-reduced-motion: reduce){.lotusP .lp,.skybg .sun,.skybg .haze,.skybg .glow3,.skybg::before,.dsh .hero img{animation:none!important}}
 /* Today's darshan chip */
 .dchip{white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 10px 0 4px;border-radius:20px;border:none;background:rgba(255,252,247,.7);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-size:13px;font-weight:700;color:var(--saT);box-shadow:0 4px 14px rgba(120,60,20,.10);transition:transform .15s}
 .dchip:active{transform:scale(.95)}
@@ -382,6 +383,62 @@ body:has(.nightwrap){background:#0F0A08}
 .dchip svg{width:16px;height:16px}
 :root[data-theme="dark"] .dchip{background:rgba(36,26,20,.7)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .dchip{background:rgba(36,26,20,.7)}}
+
+/* ===== v2.1 ===== */
+#app.pagein{animation:pagein .3s ease both}
+@keyframes pagein{from{opacity:0}}
+/* what she types is sans; the questions stay serif */
+.ruled{font-family:var(--sans)!important;font-size:17px!important;color:var(--ink)}
+.field{font-family:var(--sans)!important;font-size:17px!important;font-weight:500}
+textarea::placeholder,input::placeholder{font-family:var(--sans);color:var(--hint)}
+/* check-in and sleep tiles */
+.duorow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.duo{position:relative;display:flex;align-items:center;gap:12px;border:none;background:var(--card);border-radius:22px;padding:14px;text-align:left;color:var(--ink);min-height:74px;transition:transform .16s}
+.duo:active{transform:scale(.97)}
+.duoic{width:40px;height:40px;border-radius:20px;background:var(--pill);color:var(--saT);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.duo.due .duoic{background:var(--tint)}
+.duoic{position:relative}
+.duedot{position:absolute;top:0;right:0;border:2px solid var(--card);box-sizing:content-box;width:8px;height:8px;border-radius:4px;background:var(--sa);animation:breathe 2.4s ease-in-out infinite}
+/* celebration: one serif line */
+.cele{padding:24px 22px;align-items:flex-start}
+.cele h3{font-size:clamp(32px,9.4vw,38px)}
+/* darshan poster */
+.dsh .hero{height:clamp(360px,64dvh,620px)}
+.dsh .hero::after{height:70%;background:linear-gradient(to bottom,rgba(20,12,8,0),rgba(20,12,8,.55) 45%,rgba(20,12,8,.86))}
+.heroq{position:absolute;z-index:2;left:var(--gut);right:var(--gut);bottom:52px;color:#FFF6EC;display:flex;flex-direction:column;gap:12px}
+.heroq .quote{color:#FFF6EC;text-shadow:0 1px 12px rgba(0,0,0,.25)}
+.heroq .by{color:var(--peachT)}
+.clamp4{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.dsh .panel{gap:16px}
+/* journal as a book */
+.book{position:relative;border:none;text-align:left;width:100%;min-height:150px;border-radius:8px 22px 22px 8px;padding:26px 24px 24px 40px;color:#F3E3C8;display:flex;align-items:flex-end;overflow:visible;
+  background:radial-gradient(130% 100% at 25% 15%,#6E3F25 0%,#4C2917 55%,#3A1D10 100%);
+  box-shadow:inset 14px 0 0 rgba(0,0,0,.22),inset 16px 0 0 rgba(255,255,255,.05),3px 3px 0 -1px #F3EBDD,6px 6px 0 -2px #E4D6C1,0 14px 28px rgba(60,25,8,.22);
+  transform-origin:left center;transition:transform .16s}
+.book:active{transform:scale(.985)}
+.book::before{content:'';position:absolute;left:22px;top:12px;bottom:12px;border-left:1.5px dashed rgba(243,227,200,.28)}
+.book::after{content:'';position:absolute;inset:10px 10px 10px 30px;border:1px solid rgba(227,194,142,.28);border-radius:4px 14px 14px 4px;pointer-events:none}
+.book .band{position:absolute;right:30px;top:0;bottom:0;width:8px;background:linear-gradient(90deg,#24110A,#3A1C10 50%,#24110A);box-shadow:1px 0 2px rgba(0,0,0,.3)}
+.book .ribbon{position:absolute;left:62%;bottom:-16px;width:12px;height:26px;background:var(--sa);clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%)}
+.booktitle{font-family:var(--serif);font-size:38px;line-height:1;color:#E3C28E;text-shadow:0 1px 0 rgba(0,0,0,.45),0 -1px 0 rgba(255,236,200,.12)}
+.booksub{font-size:13px;color:#CDB590;letter-spacing:.02em}
+.book.opening{animation:bookopen .42s cubic-bezier(.5,0,.7,.4) forwards}
+@keyframes bookopen{to{transform:perspective(1000px) rotateY(-80deg);opacity:.2}}
+.paperpage{--card:#FFFDF8;background:#FBF6EC repeating-linear-gradient(to bottom,transparent 0,transparent 33px,rgba(140,100,60,.07) 33px,rgba(140,100,60,.07) 34px)}
+body:has(.paperpage){background:#FBF6EC}
+:root[data-theme="dark"] .paperpage{background:#1F1712 repeating-linear-gradient(to bottom,transparent 0,transparent 33px,rgba(255,240,220,.04) 33px,rgba(255,240,220,.04) 34px)}
+:root[data-theme="dark"] body:has(.paperpage){background:#1F1712}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .paperpage{background:#1F1712 repeating-linear-gradient(to bottom,transparent 0,transparent 33px,rgba(255,240,220,.04) 33px,rgba(255,240,220,.04) 34px)}:root:not([data-theme="light"]) body:has(.paperpage){background:#1F1712}}
+/* mala banner in Calm space */
+.malabanner{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;border:none;text-align:left;width:100%;border-radius:28px;padding:22px 18px 22px 22px;min-height:170px;color:#F7F1E8;background:radial-gradient(90% 120% at 90% 50%,#4A2716 0%,#241510 60%,#1A110D 100%);transition:transform .16s}
+.malabanner:active{transform:scale(.98)}
+.malabanner::before{content:'';position:absolute;width:220px;height:220px;right:-40px;top:-30px;border-radius:50%;background:radial-gradient(circle,rgba(196,85,15,.45),rgba(196,85,15,0) 70%);animation:drift2 14s ease-in-out infinite alternate}
+.miniring{position:relative;width:128px;height:128px;flex-shrink:0;z-index:1}
+.miniring>span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;color:#F7F1E8}
+.minichant{margin-top:6px;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 8px;border-radius:16px;background:var(--sa);font-size:13px;font-weight:700}
+.minichant svg{width:14px;height:14px}
+.malabg i{transition:none}
+.sky>.skybg{position:absolute;z-index:0}
 .into{animation:intoBox .9s cubic-bezier(.5,0,.7,1) both}
 @keyframes intoBox{0%{transform:none;opacity:1}60%{transform:translateY(90px) scale(.5);opacity:.8}100%{transform:translateY(120px) scale(.2);opacity:0}}
 .lid{transform-origin:10% 100%;animation:lid 1.2s ease-in-out both}
@@ -486,8 +543,9 @@ function getData(key) { const [c, id] = split(key); return c === 'app' ? S[id] :
 function setData(key, v) { const [c, id] = split(key); if (c === 'app') S[id] = v; else { S[c] = S[c] || {}; if (v === undefined) delete S[c][id]; else S[c][id] = v; } }
 function fieldsJ(o) { const r = {}; Object.keys(o || {}).forEach(f => r[f] = J(o[f])); return r; }
 function setSaveState() {}
-function save(key) { dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); }
+function save(key) { if (OWNER && !String(key).startsWith('notes/')) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); }
 async function flush() {
+  if (OWNER) [...dirty].forEach(k => { if (!k.startsWith('notes/')) dirty.delete(k); });
   if (!USER || !ready || flushing || !dirty.size) return;
   if (!navigator.onLine) { online = false; return; }
   flushing = true;
@@ -514,7 +572,7 @@ function removeDoc(key) { const d = getData(key); if (!d) return; d.deleted = tr
 function applyRemote(key, remote, defs) {
   const local = getData(key), b = B[key];
   let merged = Object.assign(defs ? defs() : {}, clone(remote));
-  if (local && b) {
+  if (local && b && !OWNER) {
     Object.keys(local).forEach(f => { if (J(local[f]) !== (b[f] === undefined ? J(undefined) : b[f])) { merged[f] = local[f]; dirty.add(key); } });
   } else if (local && !b && dirty.has(key)) {
     Object.keys(local).forEach(f => { if (!(f in remote)) merged[f] = local[f]; });
@@ -659,6 +717,7 @@ function render(keepScroll) {
   const html = V[route.v](route.p), app = $('#app');
   app.classList.toggle('still', !!keepScroll);
   app.innerHTML = html;
+  if (!keepScroll) { app.classList.remove('pagein'); void app.offsetWidth; app.classList.add('pagein'); }
   const withNav = ['today', 'grow', 'me'].includes(route.v);
   $('#nav').hidden = !withNav;
   if (withNav) $('#nav').innerHTML = navHTML(route.v);
@@ -972,7 +1031,7 @@ V.calm = () => {
     + '<label for="calmName" class="small" style="color:var(--muted)">My mind is telling me that…</label><input id="calmName" class="field it" placeholder="Type it, or skip" data-in="calmName" data-enter="calmNamed" value="' + esc(calmName) + '">'
     + (calmMsg ? '<p class="fade" style="font-size:15px;color:var(--saT)">' + calmMsg + '</p>' : '')
     + '<button class="link" style="align-self:flex-start" data-a="openTeach" data-t="Body and soul">Read “Body and soul”</button></section>'
-    + '<button class="card between" style="border:none;text-align:left;gap:14px" data-a="go" data-v="mala"><span class="row" style="gap:14px"><span class="malaicon" aria-hidden="true"></span><span class="col" style="gap:2px"><span class="serif" style="font-size:22px">Mala</span><span class="small">' + ((day().mala || {}).done ? (day().mala.done + ((day().mala.done === 1) ? ' mala' : ' malas') + ' today') : 'Count 108, one tap at a time') + '</span></span></span>' + I.right + '</button>'
+    + malaBanner()
     + '<section class="col" style="gap:12px"><h2 class="h2">Words from the gurus</h2><div class="carousel">' + q.map(x => '<div class="card" style="width:min(82%,340px);display:flex;flex-direction:column;gap:10px;justify-content:space-between"><p class="quote" style="font-size:20px">“' + esc(x.t) + '”</p><div class="col" style="gap:2px"><span class="by">' + esc(x.by) + '</span><span class="small">' + esc(x.src) + '</span></div></div>').join('') + '</div></section>'
     + '<section class="col" style="gap:10px"><h2 class="h2">People</h2>'
     + (trusted ? '<div class="card between"><div class="col"><span style="font-weight:600;font-size:16px">Call ' + esc(trusted.name) + '</span><span class="small" style="user-select:all">' + esc(trusted.phone) + '</span></div><a class="iconbtn" style="background:var(--sa);color:#fff" href="tel:' + esc(trusted.phone.replace(/\s/g, '')) + '" aria-label="Call ' + esc(trusted.name) + '">' + I.phone + '</a></div>'
@@ -1065,17 +1124,24 @@ function listenHTML() {
   return '<section class="col" style="gap:12px"><div class="between"><h2 class="h2">Listen &amp; watch</h2><button class="link" data-a="mediaOpen">' + (addOpen ? 'Cancel' : '+ Add a link') + '</button></div>'
     + (addOpen ? '<div class="card col fade" style="gap:10px"><label for="mUrl" class="small">Paste a YouTube (or any) link</label><input id="mUrl" class="field" style="font-family:var(--sans);font-size:16px" type="url" inputmode="url" placeholder="https://youtube.com/…" aria-label="Link">'
       + '<label for="mTitle" class="small">What is it?</label><input id="mTitle" class="field" style="font-size:19px" placeholder="e.g. Swami ni vato katha" aria-label="Title" data-enter="mediaAdd">'
-      + '<div class="chips">' + ROWS.map(r => '<button class="chip' + (addRow === r ? ' on' : '') + '" data-a="mediaRow" data-r="' + r + '">' + r + '</button>').join('') + '</div>'
+      + '<div class="chips">' + rowsAll().map(r => '<button class="chip' + (addRow === r ? ' on' : '') + '" data-a="mediaRow" data-r="' + esc(r) + '">' + esc(r) + '</button>').join('') + (tagNew ? '<span class="row" style="gap:6px"><input id="mTag" class="inp" style="height:38px;width:150px;font-size:15px" placeholder="e.g. Arti" data-enter="mediaTagAdd"><button class="chip on" data-a="mediaTagAdd">Add</button></span>' : '<button class="chip" style="background:transparent;border:1.5px dashed var(--rule)" data-a="mediaTagNew">+ New tag</button>') + '</div>'
       + '<button class="btn sm" style="align-self:flex-start" data-a="mediaAdd">Save</button></div>' : '')
-    + '<div class="chips">' + ['All'].concat(ROWS).map(r => '<button class="chip' + (listenRow === r ? ' on' : '') + '" data-a="listenRow" data-r="' + r + '">' + r + '</button>').join('') + '</div>'
+    + '<div class="chips">' + ['All'].concat(rowsAll()).map(r => '<button class="chip' + (listenRow === r ? ' on' : '') + '" data-a="listenRow" data-r="' + esc(r) + '">' + esc(r) + '</button>').join('') + '</div>'
     + (shown.length ? shown.map(k => '<div class="card between" style="padding:14px"><button class="row" data-a="playVideo" data-u="' + esc(k.url) + '" data-t="' + esc(k.t) + '" style="border:none;background:none;padding:0;text-align:left;flex:1;min-width:0"><span style="width:52px;height:52px;border-radius:14px;background:var(--sa);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">' + I.play + '</span><span class="col" style="min-width:0"><span style="font-weight:600;font-size:16px;overflow-wrap:anywhere">' + esc(k.t) + '</span><span class="small">' + esc(k.row) + ' · ' + esc(k.ch || hostOf(k.url)) + '</span></span></button>'
-      + (k.own ? '<button class="xbtn" data-a="mediaRm" data-id="' + esc(k.id) + '" aria-label="Remove ' + esc(k.t) + '">' + I.close + '</button>' : '<span style="color:var(--hint);flex-shrink:0">' + I.ext + '</span>') + '</div>').join('')
+      + (k.own ? '<button class="chip" style="min-height:32px;padding:4px 12px;font-size:12px;flex-shrink:0" data-a="mediaRetag" data-id="' + esc(k.id) + '">Tag</button><button class="xbtn" style="margin-left:4px" data-a="mediaRm" data-id="' + esc(k.id) + '" aria-label="Remove ' + esc(k.t) + '">' + I.close + '</button>' : '<span style="color:var(--hint);flex-shrink:0">' + I.ext + '</span>') + '</div>').join('')
       : '<p class="sub">Nothing here yet. Tap “+ Add a link” to add one.</p>')
     + '</section>';
 }
 A.listenRow = el => { listenRow = el.dataset.r; render(true); };
 A.mediaOpen = () => { addOpen = !addOpen; render(true); if (addOpen) setTimeout(() => $('#mUrl') && $('#mUrl').focus(), 30); };
-A.mediaRow = el => { addRow = el.dataset.r; const u = $('#mUrl').value, t = $('#mTitle').value; render(true); $('#mUrl').value = u; $('#mTitle').value = t; };
+A.mediaRow = el => { addRow = el.dataset.r; keepAdd(() => render(true)); };
+let tagNew = false;
+function rowsAll() { return ROWS.concat((S.media.tags || []).filter(t => !ROWS.includes(t))); }
+function keepAdd(fn) { const u = ($('#mUrl') || {}).value || '', t = ($('#mTitle') || {}).value || ''; fn(); if ($('#mUrl')) $('#mUrl').value = u; if ($('#mTitle')) $('#mTitle').value = t; }
+A.mediaTagNew = () => { tagNew = true; keepAdd(() => render(true)); setTimeout(() => $('#mTag') && $('#mTag').focus(), 30); };
+A.mediaTagAdd = () => { const v = (($('#mTag') || {}).value || '').trim(); tagNew = false; if (v) { S.media.tags = (S.media.tags || []).filter(x => x !== v).concat([v]); addRow = v; save('media'); } keepAdd(() => render(true)); };
+A.mediaRetag = el => { const id = el.dataset.id; sheet('<div class="between"><span class="h2">Tag</span>' + closeBtn('closeSheet') + '</div><div class="chips">' + rowsAll().map(r => '<button class="chip" data-a="mediaRetagSet" data-id="' + esc(id) + '" data-r="' + esc(r) + '">' + esc(r) + '</button>').join('') + '</div>'); };
+A.mediaRetagSet = el => { const it = (S.media.items || []).find(x => x.id === el.dataset.id); if (it) { it.row = el.dataset.r; save('media'); } closeSheet(); render(true); };
 A.mediaAdd = () => {
   let u = $('#mUrl').value.trim(), t = $('#mTitle').value.trim();
   const m = u.match(/https?:\/\/\S+/); if (!m) return toast('Paste a link that starts with https://');
@@ -1366,7 +1432,7 @@ V.journal = p => {
     const list = journalEntries();
     body = '<p class="sub">Your answers to “What have Maharaj &amp; Swami given me today?”, plus your teaching reflections.</p>' + (list.length ? '<section class="col">' + list.map(jHTML).join('') + '</section>' : '<p class="sub">Your prapti lines will gather here. One line a day is plenty.</p>');
   }
-  return '<main class="wrap nonav"><div class="between"><span class="pill">Journal</span>' + closeBtn() + '</div><h1 class="h1">Journal</h1>' + tabs + body + '</main>';
+  return '<main class="wrap nonav paperpage"><div class="between"><span class="pill">Journal</span>' + closeBtn() + '</div><h1 class="h1">Journal</h1>' + tabs + body + '</main>';
 };
 V.journal_after = () => fillPhotos();
 function groupByDate(list) { const g = []; list.forEach(x => { let last = g[g.length - 1]; if (!last || last.d !== x.date) g.push(last = { d: x.date, items: [] }); last.items.push(x); }); return g; }
@@ -1731,7 +1797,7 @@ function hapPattern(ts) { ts.forEach(t => t ? setTimeout(hap, t) : hap()); }
 /* ---------- time of day ---------- */
 function greet() { const h = now().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
 function tod() { const h = now().getHours(); return h >= 5 && h < 11 ? 't-morn' : h >= 11 && h < 17 ? 't-day' : h >= 17 && h < 21 ? 't-eve' : 't-night'; }
-function skyHead(inner) { return '<header class="sky ' + tod() + '"><span class="sun"></span><span class="haze"></span><span class="glow3"></span>' + inner + '</header>'; }
+function skyHead(inner) { return '<header class="sky ' + tod() + '"><div class="skybg" aria-hidden="true"><span class="sun"></span><span class="haze"></span><span class="glow3"></span></div>' + inner + '</header>'; }
 function todayView() {
   const { m, ti } = dailyPair(TODAY), own = ownList(), n = dayNum(TODAY), pool = DAILY_MURTIS.length + own.length, slot = ((n % pool) + pool) % pool;
   return slot >= DAILY_MURTIS.length ? pairView({ own: own[slot - DAILY_MURTIS.length].id, ti }) : pairView({ m, ti });
@@ -1783,8 +1849,8 @@ const MODE_LINE = {
 };
 function celeLine(n, mode) {
   const L = mode === 'hard'
-    ? [['All done.', 'On a hard day, that matters.'], ['Done.', 'You showed up when it was difficult.'], ['Every box ticked.', 'Rest now. Jay Swaminarayan.']]
-    : [n > 1 && n <= 10 ? [cap1(NUMW[n]) + ' for ' + NUMW[n] + '.', 'Day handled.'] : ['All done.', 'Day handled.'], ['Clean sweep.', 'Everything on the list, done.'], ['List cleared.', 'The rest of the day is yours.'], ['Sorted.', 'Good work today.'], ['Every box ticked.', 'That\'s a solid day.'], ['All done.', 'Jay Swaminarayan.']];
+    ? [['All done'], ['All done, on a hard day'], ['All done. Rest now']]
+    : [['All done'], [n > 1 && n <= 10 ? cap1(NUMW[n]) + ' for ' + NUMW[n] : 'All done'], ['Clean sweep'], ['All done'], ['List cleared'], ['Every box ticked']];
   return L[((dayNum(TODAY) % L.length) + L.length) % L.length];
 }
 function celebrate() {
@@ -1807,6 +1873,16 @@ function checkinBlock(dd) {
   return '<section class="card col" style="gap:14px"><div class="between" style="align-items:baseline"><span class="serif" style="font-size:clamp(22px,6.4vw,25px);line-height:1.1">' + (reopen ? 'How\'s the afternoon?' : 'How are you right now?') + '</span><span class="small">10 sec</span></div>'
     + '<div class="mood4">' + MOODS.map(([k, l]) => '<button style="background:' + QUADS[k].bg + '" data-a="ciStart" data-k="' + k + '">' + l + '</button>').join('') + '</div></section>';
 }
+function duoTiles(dd) {
+  const cs = dd.checkins || [], last = cs[cs.length - 1], h = now().getHours(), reopen = last && h >= 13 && toMins(last.at) < 13 * 60, ciDue = !last || reopen;
+  const sl = dd.sleep, slLogged = sl && sl.bed, slDue = !slLogged && !(sl && sl.skipped) && h < 15 && !OWNER;
+  const tile = (a, v, ic, title, sub, due) => '<button class="duo' + (due ? ' due' : '') + '" data-a="' + a + '" data-v="' + v + '"><span class="duoic">' + ic + (due ? '<i class="duedot"></i>' : '') + '</span><span class="col" style="gap:2px;min-width:0"><span class="serif" style="font-size:20px;line-height:1.1">' + title + '</span><span class="small">' + sub + '</span></span></button>';
+  const face = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1.8 1.6 5.2 1.6 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>';
+  return '<div class="duorow">'
+    + tile('go', 'checkin', face, ciDue ? (reopen ? 'How\'s the afternoon?' : 'How are you?') : esc(last.w), ciDue ? 'Check in' : mins(toMins(last.at)), ciDue)
+    + tile('go', slDue ? 'sleeplog' : 'sleep', '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + G_ICON.sleep + '</svg>', slLogged ? fmtH(sleepHours(sl)) : 'Sleep', slLogged ? 'last night' : slDue ? 'How did you sleep?' : 'Your nights', slDue)
+    + '</div>';
+}
 A.ciStart = el => { CI = { step: 1, q: el.dataset.k, w: null, tags: [], note: '', extraTags: [] }; go('checkin'); };
 A.ciHard = () => { day().mode = 'hard'; save('days/' + TODAY); CI = null; stack = []; go('today', null, { replace: true }); toast('Hard day. Just your minimums.'); };
 
@@ -1823,17 +1899,16 @@ V.today = () => {
   const cl = all ? celeLine(items.length, mode) : null;
   return '<main class="wrap">'
     + skyHead('<div class="between"><span class="pill">' + parse(TODAY).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '') + '</span>' + darshanChip() + '</div>'
-      + '<div class="skyrow"><div class="col" style="gap:8px;min-width:0"><h1 class="hello">' + greet() + ',<br>Chhaya</h1><p class="skysub">' + todaySub(mode, items.length, done) + '</p></div>' + lotusSVG(items.length, done) + '</div>')
-    + (OWNER ? '<div class="card" style="background:var(--pill);font-size:14px;line-height:1.45"><b>This is Chhaya\'s app.</b> Anything you tick or type here saves to her data.</div>' : '')
+      + '<div class="skyrow"><h1 class="hello" style="padding-bottom:6px">' + greet() + ',<br>Chhaya</h1>' + lotusSVG(items.length, done) + '</div>')
+    + (OWNER ? '<div class="card" style="background:var(--pill);font-size:14px;line-height:1.45"><b>View only.</b> You\'re seeing Chhaya\'s app. Nothing you tick or type here reaches her, except surprise notes (in Me).</div>' : '')
     + noteCard()
     + (welcome ? '<p class="serif fade" style="font-size:21px;color:var(--saT)">' + welcome + '</p>' : '')
-    + sleepPrompt()
     + '<div class="seg" role="group" aria-label="How is today?">' + ['good', 'steady', 'hard'].map(k => '<button class="' + (mode === k ? 'on' : '') + '" data-a="mode" data-k="' + k + '" aria-pressed="' + (mode === k) + '">' + ({ good: 'Good day', steady: 'Steady', hard: 'Hard day' })[k] + '</button>').join('') + '</div>'
     + '<p class="small" style="margin-top:-12px;line-height:1.5">' + MODE_LINE[mode] + ' <button class="link" style="font-size:13px" data-a="go" data-v="setup">Edit</button></p>'
-    + checkinBlock(dd)
+    + duoTiles(dd)
     + pin + sleepCard
     + '<div class="col" style="gap:10px">' + items.map(task).join('')
-    + (all ? '<div class="cele' + (justFinished ? ' enter' : '') + '"><span class="eyebrow">All done</span><h3>' + cl[0] + '</h3><p style="font-size:15px;opacity:.92">' + cl[1] + '</p></div>' : '')
+    + (all ? '<div class="cele' + (justFinished ? ' enter' : '') + '"><h3>' + cl[0] + '</h3></div>' : '')
     + '<div class="addrow"><input id="extra" placeholder="Add something for today" aria-label="Add something for today" data-enter="addExtra"><button class="iconbtn" style="background:var(--sa);color:#fff" data-a="addExtra" aria-label="Add">' + I.plus + '</button></div>'
     + extraChips(dd)
     + (rtmsTimeOn(TODAY) && !dd.noRtms && !dd.done.rtms ? '<button class="link" style="align-self:flex-start;color:var(--faint);font-weight:500" data-a="noRtms">No rTMS session today</button>' : '')
@@ -1852,19 +1927,20 @@ V.today_after = () => { justFinished = false; lastTicked = null; fillPhotos(); }
 V.darshan = () => {
   const dd = day(), v = todayView(), ti = dailyPair(TODAY).ti;
   const q = { t: v.t, by: v.by, scan: v.mine ? '' : C.thoughts[ti].scan }; dView = v;
-  const long = q.t.length > 180;
+  const long = q.t.length > 200;
   return '<main class="wrap nonav dsh">'
-    + '<div class="hero">' + imgTag(v, 'Today\'s darshan') + '<div class="herotop"><span class="glasspill">' + dayLabel(TODAY) + '</span><button class="glassbtn" data-a="shareToday" aria-label="Share today\'s darshan">' + I.share + '</button></div></div>'
+    + '<div class="hero">' + imgTag(v, 'Today\'s darshan')
+    + '<div class="herotop"><span class="glasspill">' + dayLabel(TODAY) + '</span><span class="row" style="gap:8px"><button class="glassbtn" data-a="shareToday" aria-label="Share today\'s darshan">' + I.share + '</button>' + (dd.begun ? '<button class="glassbtn" data-a="dshClose" aria-label="Close">' + I.close + '</button>' : '') + '</span></div>'
+    + '<div class="heroq rise"><p class="quote' + (long ? ' clamp4' : '') + '" style="font-size:' + quoteSize(q.t) + '">“' + esc(q.t) + '”</p>'
+    + '<div class="row" style="gap:12px;justify-content:space-between"><span class="by">' + esc(q.by) + '</span>' + (long || q.scan ? '<button class="link" style="color:#FFE2C8;font-size:13px" data-a="' + (v.mine ? 'ownQuote' : 'thought') + '" data-i="' + ti + '">' + (long ? 'Read more' : 'In his handwriting') + '</button>' : '') + '</div></div></div>'
     + '<div class="panel">'
-    + '<div class="col rise" style="gap:6px"><span class="greet">' + greet() + '</span><h1 class="serif" style="font-size:clamp(30px,8.8vw,38px);line-height:1.04;letter-spacing:-.01em">Jay Swaminarayan, Chhaya</h1></div>'
-    + '<div class="col rise rise2" style="gap:10px"><p class="quote' + (long ? ' clamp3' : '') + '" style="font-size:' + quoteSize(q.t) + '">“' + esc(q.t) + '”</p>'
-    + (long || q.scan ? '<button class="link" style="align-self:flex-start;height:28px" data-a="' + (v.mine ? 'ownQuote' : 'thought') + '" data-i="' + ti + '">' + (long ? 'Read more' : 'See it in his handwriting') + '</button>' : '')
-    + '<div class="by">' + esc(q.by) + '</div></div>'
+    + '<h1 class="serif rise rise2" style="font-size:clamp(26px,7.6vw,32px);line-height:1.05">Jay Swaminarayan, Chhaya</h1>'
     + onThisDay()
     + '<div class="praptibox rise rise3"><label for="prapti" class="serif" style="font-size:20px;line-height:1.2">What have Maharaj &amp; Swami given me today?</label>'
     + '<textarea id="prapti" class="ruled" rows="2" style="height:68px" placeholder="Write a line…" data-in="prapti">' + esc(dd.prapti) + '</textarea></div>'
     + '<div style="flex:1;min-height:8px"></div><div class="cta"><button class="btn" data-a="begin">' + (dd.begun ? 'Back to today' : 'Begin my day') + '</button></div></div></main>';
 };
+A.dshClose = () => { stack = []; go('today', null, { replace: true }); };
 V.darshan_after = () => { fillPhotos(); setTimeout(() => prepShare(dView), 600); };
 
 /* ---------- share: the darshan page itself, as a 9:16 story ---------- */
@@ -2071,6 +2147,53 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) setT
 
 function rangeLabel(a, b) { const A = parse(a), B = parse(b), m = d => d.toLocaleDateString('en-GB', { month: 'long' }); return A.getMonth() === B.getMonth() ? A.getDate() + ' to ' + B.getDate() + ' ' + m(B) : A.getDate() + ' ' + m(A) + ' to ' + B.getDate() + ' ' + m(B); }
 
+/* ---------- journal as a book ---------- */
+function journalCard() {
+  const js = Object.values(S.journal || {}).filter(x => !x.deleted), today = js.filter(j => j.date === TODAY).length;
+  return '<button class="book" data-a="openJournal" aria-label="Open your journal"><span class="band" aria-hidden="true"></span><span class="ribbon" aria-hidden="true"></span>'
+    + '<span class="col" style="gap:8px;position:relative"><span class="booktitle">Journal</span><span class="booksub">' + (today ? today + (today === 1 ? ' entry' : ' entries') + ' today' : js.length ? js.length + ' entries so far' : 'Your own space') + '</span></span></button>';
+}
+A.openJournal = el => { if (reduced() || !el || !el.classList) return go('journal'); el.classList.add('opening'); hap(); setTimeout(() => go('journal', { opened: 1 }), 380); };
+
+/* ---------- mala banner in Calm space ---------- */
+function malaBanner() {
+  const m = (day().mala || {}), n = m.n || 0;
+  return '<button class="malabanner" data-a="go" data-v="mala"><span class="col" style="gap:6px;position:relative;z-index:1;flex:1;min-width:0"><span class="eyebrow" style="color:var(--peachT)">Mala</span><span class="serif" style="font-size:clamp(26px,7.6vw,30px);line-height:1.05">Count 108 names</span><span style="font-size:14px;color:#CDBBA8">' + (m.done ? m.done + (m.done === 1 ? ' mala' : ' malas') + ' today' : n ? n + ' of 108 so far' : 'Tap to count, chant along') + '</span><span class="minichant">' + PLAYI + ' Chant along</span></span>'
+    + '<span class="miniring" aria-hidden="true">' + malaSVG(n, n >= 108) + '<span class="serif">' + (n >= 108 ? '✓' : n) + '</span></span></button>';
+}
+
+/* ---------- mala: light fades in and out with the mantra ---------- */
+let malaFade = 0, malaFadeTo = 0;
+A.malaMantra = () => {
+  const a = malaAudio(); malaMantra = !malaMantra;
+  if (malaMantra) {
+    try { const main = audio(); if (main && !main.paused) main.pause(); } catch (e) {}
+    try { if (!malaCtx) { const AC = window.AudioContext || window.webkitAudioContext; malaCtx = new AC(); const src = malaCtx.createMediaElementSource(a); malaAn = malaCtx.createAnalyser(); malaAn.fftSize = 256; malaAn.smoothingTimeConstant = .8; src.connect(malaAn); malaAn.connect(malaCtx.destination); } if (malaCtx.state !== 'running') malaCtx.resume(); } catch (e) { malaAn = null; logErr('mala-audio', e.message); }
+    a.play().catch(e => { malaMantra = false; malaFadeTo = 0; malaBtn(); logErr('mala-play', e.message); });
+    malaFadeTo = 1; malaLoop();
+  } else { a.pause(); malaFadeTo = 0; }
+  malaBtn();
+};
+function malaBtn() { const b = $('.chant'); if (!b) return; b.querySelector('.pb').innerHTML = malaMantra ? PAUSEI : PLAYI; b.querySelector('b').textContent = malaMantra ? 'Chanting along' : 'Chant along'; $('.malawrap').classList.toggle('playing', malaMantra); }
+function malaLoop() {
+  cancelAnimationFrame(malaRAF); const buf = malaAn ? new Uint8Array(malaAn.frequencyBinCount) : null; let sm = .4, last = performance.now();
+  const step = t => {
+    if (!route || route.v !== 'mala') { malaFade = 0; return; }
+    const dt = Math.min(.1, (t - last) / 1000); last = t;
+    malaFade += (malaFadeTo - malaFade) * Math.min(1, dt * 1.6);
+    let amp = .45 + .25 * Math.sin(t / 700) * Math.sin(t / 2300);
+    if (malaAn && malaMantra) { malaAn.getByteFrequencyData(buf); let s = 0; for (let i = 2; i < 40; i++) s += buf[i]; amp = Math.min(1, s / (38 * 150)); }
+    sm = sm * .9 + amp * .1; const ts = t / 1000;
+    document.querySelectorAll('.malabg i').forEach((e, i) => { const w = [1, .8, .65][i], ph = i * 1.9; e.style.transform = 'translate(' + (Math.sin(ts * .3 + ph) * 30).toFixed(1) + 'px,' + (Math.cos(ts * .25 + ph) * 24).toFixed(1) + 'px) scale(' + (.8 + sm * w * .5).toFixed(3) + ')'; e.style.opacity = ((.12 + sm * w * .45) * malaFade).toFixed(3); });
+    if (!malaMantra && malaFade < .01) { document.querySelectorAll('.malabg i').forEach(e => e.style.opacity = 0); return; }
+    malaRAF = requestAnimationFrame(step);
+  };
+  malaRAF = requestAnimationFrame(step);
+}
+
+/* ---------- view-only account: taps that would change her day just explain themselves ---------- */
+['tog', 'mode', 'addExtra', 'extraChip', 'rmExtra', 'ciSave', 'sleepSave', 'setupDone', 'jSave', 'smSave', 'malaReset', 'jobAdd', 'jobTog', 'featTog', 'msSave'].forEach(k => { const f = A[k]; if (!f) return; A[k] = (el, e) => { if (OWNER) return toast('View only on your account'); return f(el, e); }; });
+
 /* ===== Weekly check-in (PHQ-9) ===== */
 const PHQ = ['Little interest or pleasure in doing things', 'Feeling down, depressed, or hopeless', 'Trouble falling or staying asleep, or sleeping too much', 'Feeling tired or having little energy', 'Poor appetite or overeating', 'Feeling bad about yourself, or that you are a failure or have let yourself or your family down', 'Trouble concentrating on things, such as reading the newspaper or watching television', 'Moving or speaking so slowly that other people could have noticed; or the opposite, being so fidgety or restless that you have been moving around a lot more than usual', 'Thoughts that you would be better off dead or of hurting yourself in some way'];
 const PHQA = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
@@ -2215,6 +2338,7 @@ function boot() {
   try { localStorage.setItem('prapti-lastOpen', TODAY); } catch (e) {}
   stack = []; applyTheme();
   const h = now().getHours();
+  if (OWNER) { route = null; go('today', null, { replace: true }); return; }
   if (h < 5 && !nightDismissed) { route = null; go('night', null, { replace: true }); }
   else if (!day().begun) { route = null; go('darshan', null, { replace: true }); }
   else if (!S.settings.setupDone) go('setup', { first: true }, { replace: true });
@@ -2237,6 +2361,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=403aad80').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=4866dee1').catch(() => {}));</script>
 </body>
 </html>
