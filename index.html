@@ -624,7 +624,8 @@ let USER = null, OWNER = false, ready = false, online = navigator.onLine, flushT
 let dirty = new Set((() => { try { return JSON.parse(localStorage.getItem(LSD) || '[]'); } catch (e) { return []; } })());
 const J = v => JSON.stringify(v === undefined ? null : v);
 const clone = o => JSON.parse(JSON.stringify(o));
-function cacheLocal() { try { localStorage.setItem(LS, JSON.stringify(S)); localStorage.setItem(LSB, JSON.stringify(B)); localStorage.setItem(LSD, JSON.stringify([...dirty])); } catch (e) {} }
+let freshStart = false;
+function cacheLocal() { if (freshStart) return; try { localStorage.setItem(LS, JSON.stringify(S)); localStorage.setItem(LSB, JSON.stringify(B)); localStorage.setItem(LSD, JSON.stringify([...dirty])); } catch (e) {} }
 function day(d) { d = d || TODAY; if (!S.days[d]) S.days[d] = DAYDEF(d); return S.days[d]; }
 function split(key) { return key.includes('/') ? key.split('/') : ['app', key]; }
 function rowId(key) { const [c, id] = split(key); return c + '/' + id; }
@@ -632,9 +633,10 @@ function getData(key) { const [c, id] = split(key); return c === 'app' ? S[id] :
 function setData(key, v) { const [c, id] = split(key); if (c === 'app') S[id] = v; else { S[c] = S[c] || {}; if (v === undefined) delete S[c][id]; else S[c][id] = v; } }
 function fieldsJ(o) { const r = {}; Object.keys(o || {}).forEach(f => r[f] = J(o[f])); return r; }
 function setSaveState() {}
-function viewOnly() { try { return OWNER && localStorage.getItem('prapti-viewonly') === '1'; } catch (e) { return false; } }
+function viewOnly() { return !!OWNER; }
 function save(key) { if (viewOnly() && !/^(notes|feedback)\//.test(String(key))) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); }
 async function flush() {
+  if (freshStart) return;
   if (viewOnly()) [...dirty].forEach(k => { if (!/^(notes|feedback)\//.test(k)) dirty.delete(k); });
   if (!USER || !ready || flushing || !dirty.size) return;
   if (!navigator.onLine) { online = false; return; }
@@ -681,12 +683,14 @@ async function loadAll() {
   for (;;) {
     const { data, error } = await sb.from('docs').select('id,col,data').in('col', ['app'].concat(COLS)).range(from, from + size - 1);
     if (error) throw error;
+    if (!from) { const meta = data.find(r => r.id === 'app/meta'), ep = meta && meta.data && meta.data.epoch; let mine = null; try { mine = localStorage.getItem('prapti-epoch'); } catch (e) {}
+      if (ep && String(ep) !== mine) { try { [LS, LSB, LSD, 'prapti-photo-urls', 'prapti-log', 'prapti-lastOpen'].forEach(k => localStorage.removeItem(k)); localStorage.setItem('prapti-epoch', String(ep)); } catch (e) {} freshStart = true; dirty.clear(); location.reload(); throw new Error('fresh start'); } }
     data.forEach(applyRow);
     if (data.length < size) break; from += size;
   }
 }
 async function startSync() {
-  try { await loadAll(); } catch (e) { lastErr = e.message || 'load failed'; logErr('load', lastErr); }
+  try { await loadAll(); } catch (e) { if (e && e.message === 'fresh start') return; lastErr = e.message || 'load failed'; logErr('load', lastErr); }
   ready = true;
   // anything created on this phone before the first sync is uploaded now
   APPDOCS.forEach(k => { if (!B[k]) dirty.add(k); });
@@ -2189,7 +2193,7 @@ function myAppSection() {
   const ms = S.settings.milestones || {};
   const mb = (a, bg, ic, name, sub) => '<button class="setrow ic" data-a="' + a + '"><span class="itile sm" style="background:' + bg + '">' + gicon(ic) + '</span><span class="col" style="gap:2px;flex:1"><span style="font-size:16px;font-weight:600">' + name + '</span><span class="small">' + sub + '</span></span>' + I.right + '</button>';
   return '<section class="col"><h2 class="h2" style="margin-bottom:4px">My app</h2>'
-    + (OWNER ? '<div class="setrow ic"><span class="col" style="gap:2px;flex:1"><span style="font-size:16px;font-weight:600">View only (your account)</span><span class="small">On: nothing you do reaches Chhaya. Off: for testing.</span></span><button class="tg' + (viewOnly() ? '' : ' off') + '" role="switch" aria-checked="' + viewOnly() + '" aria-label="View only" data-a="viewOnlyTog"></button></div>' : '')
+
     + t('job', '#96610C', 'job', 'Job search', 'Weekly steps, the job guide') + t('rtms', '#A23B4F', 'rtms', 'rTMS', 'Sessions, schedule, clinic report')
     + (!ms.job && !hidden('job') ? mb('gotJob', 'linear-gradient(135deg,#D8651C,#A23B4F)', 'star', 'I got the job', 'Mark it, then tuck job search away') : '')
     + (!ms.rtms && !hidden('rtms') && S.rtms.sessions.length ? mb('rtmsDone', '#2E7556', 'leaf', 'I\'ve finished rTMS', 'Keeps your report, hides the rest') : '')
@@ -2611,6 +2615,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=8665c938').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=5a7c115c').catch(() => {}));</script>
 </body>
 </html>
