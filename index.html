@@ -401,7 +401,9 @@ textarea::placeholder,input::placeholder{font-family:var(--sans);color:var(--hin
 .duedot{position:absolute;top:0;right:0;border:2px solid var(--card);box-sizing:content-box;width:8px;height:8px;border-radius:4px;background:var(--sa);animation:breathe 2.4s ease-in-out infinite}
 /* celebration: one serif line */
 .cele{padding:24px 22px;align-items:flex-start}
-.cele h3{font-size:clamp(32px,9.4vw,38px)}
+.cele{padding:18px 20px}
+.cele h3{font-size:21px;line-height:1.2}
+.cele{padding:16px 20px;border-radius:20px}
 /* darshan poster */
 .dsh .hero{height:clamp(360px,64dvh,620px)}
 .dsh .hero::after{height:70%;background:linear-gradient(to bottom,rgba(20,12,8,0),rgba(20,12,8,.55) 45%,rgba(20,12,8,.86))}
@@ -413,14 +415,14 @@ textarea::placeholder,input::placeholder{font-family:var(--sans);color:var(--hin
 /* journal as a book */
 .book{position:relative;border:none;text-align:left;width:100%;min-height:150px;border-radius:8px 22px 22px 8px;padding:26px 24px 24px 40px;color:#F3E3C8;display:flex;align-items:flex-end;overflow:visible;
   background:radial-gradient(130% 100% at 25% 15%,#6E3F25 0%,#4C2917 55%,#3A1D10 100%);
-  box-shadow:inset 14px 0 0 rgba(0,0,0,.22),inset 16px 0 0 rgba(255,255,255,.05),3px 3px 0 -1px #F3EBDD,6px 6px 0 -2px #E4D6C1,0 14px 28px rgba(60,25,8,.22);
+  box-shadow:inset 14px 0 0 rgba(0,0,0,.22),inset 16px 0 0 rgba(255,255,255,.05),0 14px 28px rgba(60,25,8,.22);
   transform-origin:left center;transition:transform .16s}
 .book:active{transform:scale(.985)}
 .book::before{content:'';position:absolute;left:22px;top:12px;bottom:12px;border-left:1.5px dashed rgba(243,227,200,.28)}
-.book::after{content:'';position:absolute;inset:10px 10px 10px 30px;border:1px solid rgba(227,194,142,.28);border-radius:4px 14px 14px 4px;pointer-events:none}
+
 .book .band{position:absolute;right:30px;top:0;bottom:0;width:8px;background:linear-gradient(90deg,#24110A,#3A1C10 50%,#24110A);box-shadow:1px 0 2px rgba(0,0,0,.3)}
 .book .ribbon{position:absolute;left:62%;bottom:-16px;width:12px;height:26px;background:var(--sa);clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%)}
-.booktitle{font-family:var(--serif);font-size:38px;line-height:1;color:#E3C28E;text-shadow:0 1px 0 rgba(0,0,0,.45),0 -1px 0 rgba(255,236,200,.12)}
+.booktitle{font-family:var(--serif);font-size:clamp(30px,8.6vw,36px);line-height:1;color:#E3C28E;text-shadow:0 1px 0 rgba(0,0,0,.45),0 -1px 0 rgba(255,236,200,.12)}
 .booksub{font-size:13px;color:#CDB590;letter-spacing:.02em}
 .book.opening{animation:bookopen .42s cubic-bezier(.5,0,.7,.4) forwards}
 @keyframes bookopen{to{transform:perspective(1000px) rotateY(-80deg);opacity:.2}}
@@ -1880,7 +1882,7 @@ function duoTiles(dd) {
   const tile = (a, v, ic, title, sub, due) => '<button class="duo' + (due ? ' due' : '') + '" data-a="' + a + '" data-v="' + v + '"><span class="duoic">' + ic + (due ? '<i class="duedot"></i>' : '') + '</span><span class="col" style="gap:2px;min-width:0"><span class="serif" style="font-size:20px;line-height:1.1">' + title + '</span><span class="small">' + sub + '</span></span></button>';
   const face = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1.8 1.6 5.2 1.6 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>';
   return '<div class="duorow">'
-    + tile('go', 'checkin', face, ciDue ? (reopen ? 'How\'s the afternoon?' : 'How are you?') : esc(last.w), ciDue ? 'Check in' : mins(toMins(last.at)), ciDue)
+    + tile('go', 'checkin', face, ciDue ? (reopen ? 'How\'s the afternoon?' : 'How are you?') : 'Checked in', ciDue ? 'Check in' : mins(toMins(last.at)), ciDue)
     + tile('go', slDue ? 'sleeplog' : 'sleep', '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + G_ICON.sleep + '</svg>', slLogged ? fmtH(sleepHours(sl)) : 'Sleep', slLogged ? 'last night' : slDue ? 'How did you sleep?' : 'Your nights', slDue)
     + '</div>';
 }
@@ -2153,7 +2155,7 @@ function rangeLabel(a, b) { const A = parse(a), B = parse(b), m = d => d.toLocal
 function journalCard() {
   const js = Object.values(S.journal || {}).filter(x => !x.deleted), today = js.filter(j => j.date === TODAY).length;
   return '<button class="book" data-a="openJournal" aria-label="Open your journal"><span class="band" aria-hidden="true"></span><span class="ribbon" aria-hidden="true"></span>'
-    + '<span class="col" style="gap:8px;position:relative"><span class="booktitle">Journal</span><span class="booksub">' + (today ? today + (today === 1 ? ' entry' : ' entries') + ' today' : js.length ? js.length + ' entries so far' : 'Your own space') + '</span></span></button>';
+    + '<span class="col" style="gap:8px;position:relative"><span class="booktitle">Chhaya\'s Journal</span><span class="booksub">' + (today ? today + (today === 1 ? ' entry' : ' entries') + ' today' : js.length ? js.length + ' entries so far' : 'Your own space') + '</span></span></button>';
 }
 A.openJournal = el => { if (reduced() || !el || !el.classList) return go('journal'); el.classList.add('opening'); hap(); setTimeout(() => go('journal', { opened: 1 }), 380); };
 
@@ -2365,6 +2367,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=13ce54a3').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=739cc051').catch(() => {}));</script>
 </body>
 </html>
