@@ -1,5 +1,5 @@
 // Prapti service worker. Pages are network-first so updates arrive; images, audio and the library are cache-first.
-const CACHE = 'prapti-63b0fde5';
+const CACHE = 'prapti-ebbee8eb';
 const CORE = ['./', 'index.html', 'vendor/supabase.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png'];
 
 self.addEventListener('install', e => {
