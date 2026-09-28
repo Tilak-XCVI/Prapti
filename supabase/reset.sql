@@ -12,16 +12,16 @@ delete from public.doc_history;
 -- 3. Tell every phone to throw away its saved copy the next time it opens
 insert into public.docs (id, col, data) values ('app/meta', 'app', '{"epoch": 2}'::jsonb);
 
--- 4. Tilak's account: can read everything, but can only write surprise notes, suggestions and error logs
-update public.allowed_users set can_write = false where lower(email) = 'tilak@parmrgroup.com';
-update public.allowed_users set can_write = true  where lower(email) = 'chhayap18@gmail.com';
+-- 4. Tilak's account: reads everything, but can only write his own test space ('sandbox'),
+--    surprise notes, suggestions and error logs. It can never change Chhaya's data.
+update public.allowed_users set can_write = true where lower(email) in ('tilak@parmrgroup.com', 'chhayap18@gmail.com');
 
 drop policy if exists "insert docs" on public.docs;
 drop policy if exists "update docs" on public.docs;
 create policy "insert docs" on public.docs for insert to authenticated
-  with check (public.is_allowed(true) or (public.is_allowed(false) and col in ('notes', 'feedback', 'logs')));
+  with check (public.is_allowed(true) and (lower(coalesce(auth.jwt() ->> 'email', '')) <> 'tilak@parmrgroup.com' or col in ('sandbox', 'notes', 'feedback', 'logs')));
 create policy "update docs" on public.docs for update to authenticated
-  using (public.is_allowed(true) or (public.is_allowed(false) and col in ('notes', 'feedback', 'logs')))
-  with check (public.is_allowed(true) or (public.is_allowed(false) and col in ('notes', 'feedback', 'logs')));
+  using (public.is_allowed(true) and (lower(coalesce(auth.jwt() ->> 'email', '')) <> 'tilak@parmrgroup.com' or col in ('sandbox', 'notes', 'feedback', 'logs')))
+  with check (public.is_allowed(true) and (lower(coalesce(auth.jwt() ->> 'email', '')) <> 'tilak@parmrgroup.com' or col in ('sandbox', 'notes', 'feedback', 'logs')));
 
 select 'Prapti reset complete' as result, (select count(*) from public.docs) as docs_left;

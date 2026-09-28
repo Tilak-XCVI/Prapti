@@ -602,7 +602,12 @@ const SB_URL = 'https://pfltodlzcflxqgniznag.supabase.co', SB_KEY = 'sb_publisha
 const OWNER_EMAIL = 'tilak@parmrgroup.com';
 const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'prapti-auth' } });
 const APP_VER = 10;
-const LS = 'prapti-state-v1', LSB = 'prapti-bases-v1', LSD = 'prapti-dirty-v1';
+/* Tilak's account has two modes: his own test space ('sandbox', saved separately) or Chhaya's app, view only ('hers') */
+const OMODE = (() => { try { return localStorage.getItem('prapti-owner-mode') || ''; } catch (e) { return ''; } })();
+const SFX = OMODE ? '-' + OMODE : '';
+const LS = 'prapti-state-v1' + SFX, LSB = 'prapti-bases-v1' + SFX, LSD = 'prapti-dirty-v1' + SFX;
+const SHARED = ['notes', 'feedback'];
+function SANDBOX() { return !!OWNER && OMODE !== 'hers'; }
 const DEFAULT_MINIMUMS = ['Mala for 1 minute', 'Take supplements', 'Open the curtains', 'Drink a glass of water'];
 const DEF = () => ({
   settings: { tasks: [], setupDone: false, sleep: null, trusted: '', library: [], extraLib: [], minimums: DEFAULT_MINIMUMS.slice(), theme: 'auto', sabhaTime: '' },
@@ -628,12 +633,12 @@ let freshStart = false;
 function cacheLocal() { if (freshStart) return; try { localStorage.setItem(LS, JSON.stringify(S)); localStorage.setItem(LSB, JSON.stringify(B)); localStorage.setItem(LSD, JSON.stringify([...dirty])); } catch (e) {} }
 function day(d) { d = d || TODAY; if (!S.days[d]) S.days[d] = DAYDEF(d); return S.days[d]; }
 function split(key) { return key.includes('/') ? key.split('/') : ['app', key]; }
-function rowId(key) { const [c, id] = split(key); return c + '/' + id; }
+function rowId(key) { const [c, id] = split(key); return (SANDBOX() && !SHARED.includes(c) ? 'sandbox/' : '') + c + '/' + id; }
 function getData(key) { const [c, id] = split(key); return c === 'app' ? S[id] : (S[c] || {})[id]; }
 function setData(key, v) { const [c, id] = split(key); if (c === 'app') S[id] = v; else { S[c] = S[c] || {}; if (v === undefined) delete S[c][id]; else S[c][id] = v; } }
 function fieldsJ(o) { const r = {}; Object.keys(o || {}).forEach(f => r[f] = J(o[f])); return r; }
 function setSaveState() {}
-function viewOnly() { return !!OWNER; }
+function viewOnly() { return !!OWNER && OMODE === 'hers'; }
 function save(key) { if (viewOnly() && !/^(notes|feedback)\//.test(String(key))) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); }
 async function flush() {
   if (freshStart) return;
@@ -643,7 +648,7 @@ async function flush() {
   flushing = true;
   const keys = [...dirty];
   const rows = [];
-  keys.forEach(k => { const d = getData(k); if (d) rows.push({ id: rowId(k), col: split(k)[0], data: clone(d), _k: k }); else dirty.delete(k); });
+  keys.forEach(k => { const d = getData(k); if (d) rows.push({ id: rowId(k), col: SANDBOX() && !SHARED.includes(split(k)[0]) ? 'sandbox' : split(k)[0], data: clone(d), _k: k }); else dirty.delete(k); });
   try {
     for (let i = 0; i < rows.length; i += 40) {
       const chunk = rows.slice(i, i + 40);
@@ -673,6 +678,10 @@ function applyRemote(key, remote, defs) {
 }
 function keyFromRow(row) { const [c, ...rest] = row.id.split('/'); const id = rest.join('/'); return c === 'app' ? id : c + '/' + id; }
 function applyRow(row) {
+  if (OWNER) {
+    if (SANDBOX()) { if (row.col === 'sandbox') { const id = row.id.slice(8); row = { id, col: id.split('/')[0], data: row.data }; } else if (!SHARED.includes(row.col)) return; }
+    else if (row.col === 'sandbox') return;
+  }
   const k = keyFromRow(row), c = split(k)[0];
   if (c === 'app' && !APPDOCS.includes(k)) return;
   if (c !== 'app' && !COLS.includes(c)) return;
@@ -681,7 +690,7 @@ function applyRow(row) {
 async function loadAll() {
   let from = 0; const size = 1000;
   for (;;) {
-    const { data, error } = await sb.from('docs').select('id,col,data').in('col', ['app'].concat(COLS)).range(from, from + size - 1);
+    const { data, error } = await sb.from('docs').select('id,col,data').in('col', ['app'].concat(COLS, SANDBOX() ? ['sandbox'] : [])).range(from, from + size - 1);
     if (error) throw error;
     if (!from) { const meta = data.find(r => r.id === 'app/meta'), ep = meta && meta.data && meta.data.epoch; let mine = null; try { mine = localStorage.getItem('prapti-epoch'); } catch (e) {}
       if (ep && String(ep) !== mine) { try { [LS, LSB, LSD, 'prapti-photo-urls', 'prapti-log', 'prapti-lastOpen'].forEach(k => localStorage.removeItem(k)); localStorage.setItem('prapti-epoch', String(ep)); } catch (e) {} freshStart = true; dirty.clear(); location.reload(); throw new Error('fresh start'); } }
@@ -2008,7 +2017,7 @@ V.today = () => {
   return '<main class="wrap">'
     + skyHead('<div class="between"><span class="pill">' + parse(TODAY).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '') + '</span>' + darshanChip() + '</div>'
       + '<div class="skyrow"><h1 class="hello" style="padding-bottom:6px">' + greet() + ',<br>Chhaya</h1>' + lotusSVG(items.length, done) + '</div>')
-    + (viewOnly() ? '<div class="card" style="background:var(--pill);font-size:14px;line-height:1.45"><b>View only.</b> You\'re seeing Chhaya\'s app. Nothing you tick or type here reaches her, except surprise notes (in Me).</div>' : '')
+    + (OWNER ? '<button class="card" style="border:none;text-align:left;background:var(--pill);font-size:14px;line-height:1.45" data-a="ownerMode">' + (viewOnly() ? '<b>Chhaya\'s app, view only.</b> You\'re seeing her real day. <span class="link" style="font-size:14px">Back to my test space</span>' : '<b>Your test space.</b> Play freely; nothing here reaches Chhaya. <span class="link" style="font-size:14px">View her app</span>') + '</button>' : '')
     + noteCard()
     + (welcome ? '<p class="serif fade" style="font-size:21px;color:var(--saT)">' + welcome + '</p>' : '')
     + '<div class="seg" role="group" aria-label="How is today?">' + ['good', 'steady', 'hard'].map(k => '<button class="' + (mode === k ? 'on' : '') + '" data-a="mode" data-k="' + k + '" aria-pressed="' + (mode === k) + '">' + ({ good: 'Good day', steady: 'Steady', hard: 'Hard day' })[k] + '</button>').join('') + '</div>'
@@ -2193,6 +2202,7 @@ function myAppSection() {
   const ms = S.settings.milestones || {};
   const mb = (a, bg, ic, name, sub) => '<button class="setrow ic" data-a="' + a + '"><span class="itile sm" style="background:' + bg + '">' + gicon(ic) + '</span><span class="col" style="gap:2px;flex:1"><span style="font-size:16px;font-weight:600">' + name + '</span><span class="small">' + sub + '</span></span>' + I.right + '</button>';
   return '<section class="col"><h2 class="h2" style="margin-bottom:4px">My app</h2>'
+    + (OWNER ? '<button class="setrow ic" data-a="ownerMode"><span class="col" style="gap:2px;flex:1"><span style="font-size:16px;font-weight:600">' + (viewOnly() ? 'Showing: Chhaya\'s app (view only)' : 'Showing: my test space') + '</span><span class="small">Tap to switch to ' + (viewOnly() ? 'your test space' : 'her real app, view only') + '</span></span>' + I.right + '</button>' : '')
 
     + t('job', '#96610C', 'job', 'Job search', 'Weekly steps, the job guide') + t('rtms', '#A23B4F', 'rtms', 'rTMS', 'Sessions, schedule, clinic report')
     + (!ms.job && !hidden('job') ? mb('gotJob', 'linear-gradient(135deg,#D8651C,#A23B4F)', 'star', 'I got the job', 'Mark it, then tuck job search away') : '')
@@ -2443,6 +2453,8 @@ V.feedback = () => {
 V.feedback_after = () => fillPhotos();
 A.fbDone = el => { const x = S.feedback[el.dataset.id]; if (!x) return; x.done = !x.done; save('feedback/' + x.id); render(true); };
 
+A.ownerMode = () => { try { localStorage.setItem('prapti-owner-mode', viewOnly() ? 'sandbox' : 'hers'); } catch (e) {} toast(viewOnly() ? 'Switching to your test space…' : 'Opening Chhaya\'s app…'); setTimeout(() => location.reload(), 400); };
+
 /* ===== Weekly check-in (PHQ-9) ===== */
 const PHQ = ['Little interest or pleasure in doing things', 'Feeling down, depressed, or hopeless', 'Trouble falling or staying asleep, or sleeping too much', 'Feeling tired or having little energy', 'Poor appetite or overeating', 'Feeling bad about yourself, or that you are a failure or have let yourself or your family down', 'Trouble concentrating on things, such as reading the newspaper or watching television', 'Moving or speaking so slowly that other people could have noticed; or the opposite, being so fidgety or restless that you have been moving around a lot more than usual', 'Thoughts that you would be better off dead or of hurting yourself in some way'];
 const PHQA = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
@@ -2608,6 +2620,7 @@ async function start() {
 }
 function signedIn(u) {
   USER = u; OWNER = (u.email || '').toLowerCase() === OWNER_EMAIL;
+  if (OWNER && !OMODE) { try { ['prapti-state-v1', 'prapti-bases-v1', 'prapti-dirty-v1'].forEach(k => localStorage.removeItem(k)); localStorage.setItem('prapti-owner-mode', 'sandbox'); } catch (e) {} location.reload(); return; }
   boot(); startSync();
 }
 A.signOut = () => sheet('<span class="h2">Sign out?</span><p class="sub">Your entries stay safe in the cloud. You\'ll need your password to sign back in.</p><div class="row"><button class="btn" data-a="signOutYes">Sign out</button><button class="btn soft" data-a="closeSheet">Stay</button></div>');
@@ -2615,6 +2628,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=5a7c115c').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=03ce01f3').catch(() => {}));</script>
 </body>
 </html>
