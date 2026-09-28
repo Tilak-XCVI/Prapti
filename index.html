@@ -2019,6 +2019,7 @@ V.today = () => {
       + '<div class="skyrow"><h1 class="hello" style="padding-bottom:6px">' + greet() + ',<br>Chhaya</h1>' + lotusSVG(items.length, done) + '</div>')
     + (OWNER ? '<button class="card" style="border:none;text-align:left;background:var(--pill);font-size:14px;line-height:1.45" data-a="ownerMode">' + (viewOnly() ? '<b>Chhaya\'s app, view only.</b> You\'re seeing her real day. <span class="link" style="font-size:14px">Back to my test space</span>' : '<b>Your test space.</b> Play freely; nothing here reaches Chhaya. <span class="link" style="font-size:14px">View her app</span>') + '</button>' : '')
     + noteCard()
+    + pushCard()
     + (welcome ? '<p class="serif fade" style="font-size:21px;color:var(--saT)">' + welcome + '</p>' : '')
     + '<div class="seg" role="group" aria-label="How is today?">' + ['good', 'steady', 'hard'].map(k => '<button class="' + (mode === k ? 'on' : '') + '" data-a="mode" data-k="' + k + '" aria-pressed="' + (mode === k) + '">' + ({ good: 'Good day', steady: 'Steady', hard: 'Hard day' })[k] + '</button>').join('') + '</div>'
     + (showModeLine() ? '<p class="small" style="margin-top:-12px;line-height:1.5">' + MODE_LINE[mode] + ' <button class="link" style="font-size:13px" data-a="go" data-v="setup">Edit</button></p>' : '')
@@ -2455,6 +2456,58 @@ A.fbDone = el => { const x = S.feedback[el.dataset.id]; if (!x) return; x.done =
 
 A.ownerMode = () => { try { localStorage.setItem('prapti-owner-mode', viewOnly() ? 'sandbox' : 'hers'); } catch (e) {} toast(viewOnly() ? 'Switching to your test space…' : 'Opening Chhaya\'s app…'); setTimeout(() => location.reload(), 400); };
 
+/* ===== Push reminders ===== */
+const VAPID_PUBLIC = 'BIOjrOZw87EXVFYR2gAYFCbbhp7O1RROQlK93DBOvZbi2zkY8tuJhNM4mMVMNGj3Jm0448QyHA_4c7kANNnCv8o';
+const REMINDERS = [['darshan', 'Morning darshan', '7:00am'], ['start', 'Start the day', '10:00am, if Prapti isn\'t open yet'], ['checkin', 'Check-in', '1:00pm, if you haven\'t'], ['evening', 'Today\'s list', '7:30pm, if things are left'], ['rtms', 'rTMS', '1 hour before a session'], ['sabha', 'Sabha', '2 hours before, on Saturdays'], ['weekly', 'Weekly check-in', 'Sunday 6:00pm']];
+function pushOK() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+function standalone() { return !!(navigator.standalone || matchMedia('(display-mode: standalone)').matches); }
+function pushState() { if (!pushOK()) return standalone() ? 'unsupported' : 'browser'; return Notification.permission; }
+function b64u8(s) { const p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); }
+async function saveSub() {
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u8(VAPID_PUBLIC) });
+  const j = sub.toJSON();
+  const { error } = await sb.from('push_subs').upsert({ endpoint: j.endpoint, email: USER.email.toLowerCase(), sub: j, updated_at: new Date().toISOString() });
+  if (error) throw error;
+}
+A.pushOn = async el => {
+  if (!pushOK()) return toast(standalone() ? 'This iPhone needs iOS 16.4 or later for reminders' : 'Open Prapti from your home screen first');
+  let perm;
+  try { perm = await Notification.requestPermission(); } catch (e) { perm = 'denied'; }
+  if (perm !== 'granted') { closeSheet(); return toast('Reminders are off. You can allow them in Settings, Notifications, Prapti.'); }
+  try { await saveSub(); try { localStorage.setItem('prapti-push', '1'); } catch (e) {} hap(); closeSheet(); toast('Reminders on'); if (route.v === 'today' || route.v === 'me') render(true); }
+  catch (e) { logErr('push-sub', e.message || e); toast('Couldn\'t turn reminders on. Try again in a moment.'); }
+};
+A.pushTest = async () => {
+  toast('Sending a test…');
+  try { const { data } = await sb.auth.getSession(); const r = await fetch(SB_URL + '/functions/v1/notify', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SB_KEY, Authorization: 'Bearer ' + data.session.access_token }, body: JSON.stringify({ test: true }) }); const j = await r.json().catch(() => ({})); toast(r.ok ? (j.sent ? 'Sent. It should arrive in a few seconds.' : 'No phone registered yet. Turn reminders on first.') : 'Reminders aren\'t set up on the server yet.'); }
+  catch (e) { toast('Couldn\'t reach the reminder service'); }
+};
+A.remTog = el => { const k = el.dataset.k, st = S.settings; st.reminders = Object.assign({}, st.reminders, { [k]: st.reminders && st.reminders[k] === false }); save('settings'); remSheet(); };
+function remOn(k) { return !(S.settings.reminders && S.settings.reminders[k] === false); }
+function remSheet() {
+  const st = pushState();
+  let body;
+  if (st === 'browser') body = '<p class="sub">Reminders work when Prapti is opened from your home screen. In Safari, tap Share, then Add to Home Screen, then open Prapti from there.</p>';
+  else if (st === 'unsupported') body = '<p class="sub">Reminders need iOS 16.4 or later. Update your iPhone in Settings, General, Software Update.</p>';
+  else if (st === 'denied') body = '<p class="sub">Notifications are blocked for Prapti. Turn them on in your iPhone Settings, Notifications, Prapti.</p>';
+  else if (st === 'default') body = '<p class="sub">A gentle nudge at the right moments, never more than a few a day.</p><button class="btn" data-a="pushOn">Turn on reminders</button>';
+  else body = (OWNER ? '<p class="sub">On your phone you\'ll get a ping when Chhaya sends a suggestion.</p>' : '<div class="card" style="padding:4px 16px">' + REMINDERS.filter(r => !(r[0] === 'rtms' && hidden('rtms'))).map(r => '<div class="setrow ic"><span class="col" style="gap:2px;flex:1"><span style="font-size:16px;font-weight:600">' + r[1] + '</span><span class="small">' + r[2] + '</span></span><button class="tg' + (remOn(r[0]) ? '' : ' off') + '" role="switch" aria-checked="' + remOn(r[0]) + '" aria-label="' + r[1] + '" data-a="remTog" data-k="' + r[0] + '"></button></div>').join('') + '</div>')
+    + '<button class="btn soft" data-a="pushTest">Send a test</button>';
+  closeSheet();
+  sheet('<div class="between"><span class="h2">Reminders</span>' + closeBtn('closeSheet') + '</div>' + body);
+}
+A.remOpen = () => remSheet();
+A.pushLater = () => { try { localStorage.setItem('prapti-push-card', 'no'); } catch (e) {} render(true); };
+function pushCard() {
+  if (OWNER || pushState() !== 'default' || !standalone()) return '';
+  try { if (localStorage.getItem('prapti-push-card') === 'no') return ''; } catch (e) {}
+  return '<div class="card row" style="gap:14px;background:var(--tint)"><span class="itile sm" style="background:var(--sa)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span><span class="col" style="gap:8px;flex:1"><span style="font-size:15px;font-weight:600">Gentle reminders?</span><span class="row" style="gap:8px"><button class="chip" style="background:var(--sa);color:#fff" data-a="pushOn">Turn on</button><button class="chip" data-a="pushLater">Not now</button></span></span></div>';
+}
+// keep the phone's registration fresh whenever the app opens (iOS can rotate it)
+setTimeout(() => { try { if (USER && pushOK() && Notification.permission === 'granted') saveSub().catch(e => logErr('push-refresh', e.message || e)); } catch (e) {} }, 6000);
+
 /* ===== Weekly check-in (PHQ-9) ===== */
 const PHQ = ['Little interest or pleasure in doing things', 'Feeling down, depressed, or hopeless', 'Trouble falling or staying asleep, or sleeping too much', 'Feeling tired or having little energy', 'Poor appetite or overeating', 'Feeling bad about yourself, or that you are a failure or have let yourself or your family down', 'Trouble concentrating on things, such as reading the newspaper or watching television', 'Moving or speaking so slowly that other people could have noticed; or the opposite, being so fidgety or restless that you have been moving around a lot more than usual', 'Thoughts that you would be better off dead or of hurting yourself in some way'];
 const PHQA = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
@@ -2522,6 +2575,7 @@ V.me = () => {
     + myAppSection()
     + '<section class="col"><h2 class="h2" style="margin-bottom:4px">My day</h2>'
     + row('My daily tasks', S.settings.tasks.length ? esc(S.settings.tasks.map(t => t.t).slice(0, 3).join(' · ')) + (S.settings.tasks.length > 3 ? ' …' : '') : 'None yet', 'go', 'setup')
+    + row('Reminders', pushState() === 'granted' ? 'On' : 'Off · tap to set up', 'remOpen')
     + row('Sleep', sleepSummary(), 'go', 'sleep')
     + row('Sabha time', S.settings.sabhaTime ? 'Saturdays at ' + mins(toMins(S.settings.sabhaTime)) : 'Set it for your Saturday reminder', 'sabhaPick')
     + '</section>'
@@ -2628,6 +2682,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=03ce01f3').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=4f517f41').catch(() => {}));</script>
 </body>
 </html>
