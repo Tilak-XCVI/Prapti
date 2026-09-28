@@ -518,6 +518,16 @@ body:has(.paperpage){background:#FBF6EC}
 
 .nav .lotus{background:linear-gradient(160deg,#DE6E22,#B84A0B);box-shadow:0 8px 20px rgba(184,74,11,.3)}
 .nav .lotus svg{width:38px;height:33px;margin-top:-3px;overflow:visible}
+.madeby{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 0 6px;text-align:center}
+.mbicon{width:44px;height:44px;border-radius:13px;background:linear-gradient(160deg,#DE6E22,#B84A0B);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(184,74,11,.22)}
+.mbicon svg{width:30px;height:26px;margin-top:-3px}
+.mbword{width:84px;color:var(--ink);line-height:0}
+.mbword svg{width:100%;height:auto;display:block}
+/* darshan feed: controls stay visible on bright photos */
+.glass{background:rgba(20,12,8,.38)!important;box-shadow:0 2px 10px rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.18)!important}
+.feed .heart.on{background:var(--sa)!important}
+.feed .it::before{content:'';position:absolute;left:0;right:0;top:0;height:140px;z-index:2;background:linear-gradient(rgba(20,12,8,.45),rgba(20,12,8,0));pointer-events:none}
+.glassbtn{background:rgba(20,12,8,.38);box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .into{animation:intoBox .9s cubic-bezier(.5,0,.7,1) both}
 @keyframes intoBox{0%{transform:none;opacity:1}60%{transform:translateY(90px) scale(.5);opacity:.8}100%{transform:translateY(120px) scale(.2);opacity:0}}
 .lid{transform-origin:10% 100%;animation:lid 1.2s ease-in-out both}
@@ -601,14 +611,14 @@ const DEF = () => ({
   saved: { darshan: [] },
   media: { items: [] },
   job: { weeks: {} },
-  days: {}, weekly: {}, journal: {}, smruti: {}, mydarshan: {}, notes: {},
+  days: {}, weekly: {}, journal: {}, smruti: {}, mydarshan: {}, notes: {}, feedback: {},
 });
 const DAYDEF = d => ({ date: d, done: {}, extras: [], mode: 'steady', prapti: '', checkins: [], notes: [], begun: false, calm: [] });
 let S = DEF(), B = {};
 try { const raw = localStorage.getItem(LS); if (raw) S = Object.assign(DEF(), JSON.parse(raw)); } catch (e) {}
 try { const rb = localStorage.getItem(LSB); if (rb) B = JSON.parse(rb) || {}; } catch (e) {}
 const APPDOCS = ['settings', 'rtms', 'safety', 'saved', 'job', 'media'];
-const COLS = ['days', 'weekly', 'journal', 'smruti', 'mydarshan', 'notes'];
+const COLS = ['days', 'weekly', 'journal', 'smruti', 'mydarshan', 'notes', 'feedback'];
 const ENTRY_COLS = ['journal', 'smruti', 'mydarshan', 'notes'];
 let USER = null, OWNER = false, ready = false, online = navigator.onLine, flushT = null, flushing = false, lastErr = '';
 let dirty = new Set((() => { try { return JSON.parse(localStorage.getItem(LSD) || '[]'); } catch (e) { return []; } })());
@@ -623,9 +633,9 @@ function setData(key, v) { const [c, id] = split(key); if (c === 'app') S[id] = 
 function fieldsJ(o) { const r = {}; Object.keys(o || {}).forEach(f => r[f] = J(o[f])); return r; }
 function setSaveState() {}
 function viewOnly() { try { return OWNER && localStorage.getItem('prapti-viewonly') === '1'; } catch (e) { return false; } }
-function save(key) { if (viewOnly() && !String(key).startsWith('notes/')) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); }
+function save(key) { if (viewOnly() && !/^(notes|feedback)\//.test(String(key))) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); }
 async function flush() {
-  if (viewOnly()) [...dirty].forEach(k => { if (!k.startsWith('notes/')) dirty.delete(k); });
+  if (viewOnly()) [...dirty].forEach(k => { if (!/^(notes|feedback)\//.test(k)) dirty.delete(k); });
   if (!USER || !ready || flushing || !dirty.size) return;
   if (!navigator.onLine) { online = false; return; }
   flushing = true;
@@ -2390,6 +2400,45 @@ try { history.scrollRestoration = 'manual'; } catch (e) {}
 V.login_after = V.newpw_after = () => { window.scrollTo(0, 0); requestAnimationFrame(() => window.scrollTo(0, 0)); };
 { const f = A.signOutYes; A.signOutYes = async (el, e) => { window.scrollTo(0, 0); return f(el, e); }; }
 
+/* ===== Suggestions and problem reports (her) → inbox (you) ===== */
+let FB = null;
+function fbList() { return Object.values(S.feedback || {}).filter(x => x && !x.deleted).sort((a, b) => (b.at || '') < (a.at || '') ? -1 : 1); }
+function fbOpen() { return fbList().filter(x => !x.done).length; }
+A.fbNew = () => { FB = { type: 'idea', text: '', photo: '' }; fbSheet(); };
+function fbSheet() {
+  sheet('<div class="between"><span class="h2">Tell Tilak</span>' + closeBtn('closeSheet') + '</div>'
+    + '<div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr))">' + [['idea', 'An idea'], ['bug', 'Something\'s wrong']].map(x => '<button class="' + (FB.type === x[0] ? 'on' : '') + '" data-a="fbType" data-t="' + x[0] + '">' + x[1] + '</button>').join('') + '</div>'
+    + '<textarea id="fbText" class="ruled" style="height:136px" placeholder="' + (FB.type === 'bug' ? 'What happened, and where in the app?' : 'What would make Prapti better for you?') + '" data-in="fbText">' + esc(FB.text) + '</textarea>'
+    + (FB.photo ? '<div class="row" style="gap:10px"><img src="' + (photoSrc(FB.photo) || '') + '" alt="" style="width:56px;height:56px;border-radius:12px;object-fit:cover"><span class="small" style="flex:1">Screenshot added</span><button class="link" data-a="fbNoPhoto">Remove</button></div>'
+      : '<label class="chip" for="fbShot" style="align-self:flex-start;cursor:pointer">+ Add a screenshot</label><input id="fbShot" type="file" accept="image/*" hidden data-in="fbShot">')
+    + '<button class="btn" data-a="fbSend">Send</button>');
+  setTimeout(() => { const t = $('#fbText'); if (t) t.focus(); }, 60);
+}
+A.fbType = el => { FB.type = el.dataset.t; document.querySelectorAll('.sheet [data-a=fbType]').forEach(b => b.classList.toggle('on', b.dataset.t === FB.type)); const t = $('#fbText'); if (t) t.placeholder = FB.type === 'bug' ? 'What happened, and where in the app?' : 'What would make Prapti better for you?'; };
+INP.fbText = el => { FB.text = el.value; };
+INP.fbShot = async el => { const f = el.files && el.files[0]; el.value = ''; if (!f) return; toast('Adding screenshot…'); try { FB.photo = await storePhoto(f); fbSheet(); } catch (e) { toast(e.message || 'Couldn\'t add that'); } };
+A.fbNoPhoto = () => { FB.photo = ''; fbSheet(); };
+A.fbSend = el => {
+  if (!FB.text.trim() && !FB.photo) return toast('Write a few words first');
+  const id = 'f' + Date.now().toString(36) + uid();
+  if (!S.feedback) S.feedback = {};
+  S.feedback[id] = { id, type: FB.type, text: FB.text.trim(), photo: FB.photo, at: new Date().toISOString(), date: TODAY, from: route ? route.v : '', ver: APP_VER, ua: navigator.userAgent.slice(0, 140), standalone: !!(navigator.standalone || matchMedia('(display-mode: standalone)').matches), done: false };
+  save('feedback/' + id); burstEl(el, 12); hap(); FB = null; closeSheet(); toast('Sent. Thank you.');
+};
+V.feedback = () => {
+  const L = fbList();
+  return '<main class="wrap nonav"><div class="between"><span class="pill">Suggestions</span>' + closeBtn() + '</div><div class="col" style="gap:6px"><h1 class="h1">From Chhaya</h1><p class="sub">Ideas and problems she\'s sent from the app.</p></div>'
+    + (L.length ? L.map(x => '<section class="card col" style="gap:8px' + (x.done ? ';opacity:.6' : '') + '"><div class="between"><span class="eyebrow" style="color:' + (x.type === 'bug' ? '#B8400E' : 'var(--saT)') + '">' + (x.type === 'bug' ? 'Something\'s wrong' : 'Idea') + ' · ' + shortDate(x.date) + '</span>' + (x.done ? '<span class="small">Done</span>' : '') + '</div>'
+      + (x.text ? '<p style="font-size:16px;line-height:1.5;white-space:pre-wrap">' + esc(x.text) + '</p>' : '')
+      + (x.photo ? '<img data-photo="' + esc(x.photo) + '" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Screenshot" style="width:100%;border-radius:14px;background:var(--pill)">' : '')
+      + '<span class="small">Sent from ' + esc(x.from || '?') + (x.standalone ? ' · home-screen app' : ' · browser') + '</span>'
+      + '<button class="chip" style="align-self:flex-start" data-a="fbDone" data-id="' + x.id + '">' + (x.done ? 'Mark as open' : 'Mark as done') + '</button></section>').join('')
+      : '<p class="sub">Nothing yet.</p>')
+    + '</main>';
+};
+V.feedback_after = () => fillPhotos();
+A.fbDone = el => { const x = S.feedback[el.dataset.id]; if (!x) return; x.done = !x.done; save('feedback/' + x.id); render(true); };
+
 /* ===== Weekly check-in (PHQ-9) ===== */
 const PHQ = ['Little interest or pleasure in doing things', 'Feeling down, depressed, or hopeless', 'Trouble falling or staying asleep, or sleeping too much', 'Feeling tired or having little energy', 'Poor appetite or overeating', 'Feeling bad about yourself, or that you are a failure or have let yourself or your family down', 'Trouble concentrating on things, such as reading the newspaper or watching television', 'Moving or speaking so slowly that other people could have noticed; or the opposite, being so fidgety or restless that you have been moving around a lot more than usual', 'Thoughts that you would be better off dead or of hurting yourself in some way'];
 const PHQA = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
@@ -2472,10 +2521,11 @@ V.me = () => {
     + row('Appearance', ({ auto: 'Automatic', light: 'Light', dark: 'Dark' })[S.settings.theme || 'auto'], 'themePick')
     + '<div class="setrow" style="cursor:default"><span class="col" style="gap:2px"><span style="font-size:16px;font-weight:600">' + (!navigator.onLine ? 'Offline · saving on this phone' : dirty.size ? 'Saving…' : 'Saved to the cloud ✓') + '</span><span class="small">' + (!navigator.onLine ? 'Everything will upload when you\'re back online.' : dirty.size ? dirty.size + ' change' + (dirty.size === 1 ? '' : 's') + ' waiting to upload' + (lastErr ? ' (' + esc(lastErr) + ')' : '') : 'Everything you add is saved as you go.') + '</span></span></div>'
     + row('Save a backup file', 'Everything you\'ve written, as a file', 'backupDl')
+    + (OWNER ? row('Suggestions from Chhaya', fbOpen() ? fbOpen() + ' new' : 'Ideas and problems she sends', 'go', 'feedback') : row('Suggest an idea or report a problem', 'Goes straight to Tilak', 'fbNew'))
     + row('Something not working?', 'Copy a report if something breaks', 'diag')
     + row('Sign out', USER ? esc(USER.email) : '', 'signOut')
     + '</section>'
-    + '<div class="col" style="align-items:center;gap:6px;padding:8px 0 4px;text-align:center"><span style="color:var(--sa)">' + I.heart(true) + '</span><span class="serif it" style="font-size:21px;line-height:1.3;color:var(--ink2)">Made for Chhaya, with love, by Tilak</span></div>'
+    + '<div class="madeby"><span class="mbicon">' + iconLotus(false) + '</span><span class="mbword">' + WORDMARK + '</span><span class="serif" style="font-size:19px;line-height:1.3;color:var(--ink2)">Made for Chhaya, with love, by Tilak</span><span class="small">2026</span></div>'
     + '</main>';
 };
 A.go = el => { if (el.dataset.v === 'setup') { setupSel = null; return go('setup', {}); } go(el.dataset.v, el.dataset.p ? JSON.parse(el.dataset.p) : null); };
@@ -2538,7 +2588,7 @@ function boot() {
   stack = []; applyTheme();
   const h = now().getHours();
   if (viewOnly()) { route = null; go('today', null, { replace: true }); return; }
-  if (h < 5 && !nightDismissed) { route = null; go('night', null, { replace: true }); }
+  if (((h === 1 && now().getMinutes() >= 30) || (h >= 2 && h < 5)) && !nightDismissed) { route = null; go('night', null, { replace: true }); }
   else if (!day().begun) { route = null; go('darshan', null, { replace: true }); }
   else if (!S.settings.setupDone) go('setup', { first: true }, { replace: true });
   else go('today', null, { replace: true });
@@ -2561,6 +2611,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=11fd62e2').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=ea202128').catch(() => {}));</script>
 </body>
 </html>
