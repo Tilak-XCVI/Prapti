@@ -2525,7 +2525,7 @@ V.me = () => {
     + row('Something not working?', 'Copy a report if something breaks', 'diag')
     + row('Sign out', USER ? esc(USER.email) : '', 'signOut')
     + '</section>'
-    + '<div class="madeby"><span class="mbicon">' + iconLotus(false) + '</span><span class="mbword">' + WORDMARK + '</span><span class="serif" style="font-size:19px;line-height:1.3;color:var(--ink2)">Made for Chhaya, with love, by Tilak</span><span class="small">2026</span></div>'
+    + '<div class="madeby"><span class="mbicon">' + iconLotus(false) + '</span><span class="mbword">' + WORDMARK + '</span><span style="color:var(--sa);margin-top:4px">' + I.heart(true) + '</span><span class="serif" style="font-size:19px;line-height:1.3;color:var(--ink2)">Made for Chhaya, with love, by Tilak</span><span class="small">2026</span></div>'
     + '</main>';
 };
 A.go = el => { if (el.dataset.v === 'setup') { setupSel = null; return go('setup', {}); } go(el.dataset.v, el.dataset.p ? JSON.parse(el.dataset.p) : null); };
@@ -2611,6 +2611,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=ea202128').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=8665c938').catch(() => {}));</script>
 </body>
 </html>
