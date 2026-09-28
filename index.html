@@ -19,7 +19,7 @@
 <style>
 :root{
   color-scheme: light;
-  --bg:#F7F1E8; --bg2:#F8F4EE; --card:#FFFCF7; --ink:#2A1A12; --ink2:#4A3326; --muted:#6B5A4D; --faint:#8A7666; --hint:#B3A393;
+  --bg:#F7F1E8; --bg2:#F8F4EE; --card:#FFFCF7; --ink:#2A1A12; --ink2:#4A3326; --muted:#6B5A4D; --faint:#75614F; --hint:#B3A393;
   --sa:#C4550F; --saT:#A8470C; --tint:#FBE7D6; --pill:#EDE2D3; --line:#F1E8DC; --rule:#DDD1C3; --dark:#2A1A12; --peach:#F08A4B; --peachT:#F6B48A;
   --serif:'Instrument Serif', 'Iowan Old Style', Georgia, serif; --sans:'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --gut:clamp(16px, 5.2vw, 24px); --h1:clamp(36px, 10.6vw, 46px); --h2:clamp(23px, 6.6vw, 27px);
@@ -911,23 +911,23 @@ function jobCard() {
       + '<button class="link" style="align-self:flex-start" data-a="jobPickOff">Not now</button></div>';
   } else {
     body = (w.steps.length ? '<div class="col">' + w.steps.map((s, i) => '<button class="checkrow" data-a="jobTog" data-i="' + i + '"><span class="box' + (s.done ? ' on' : '') + '">' + (s.done ? I.tick : '') + '</span><span' + (s.done ? ' style="color:var(--faint)"' : '') + '>' + esc(s.t) + '</span></button>').join('') + '</div>' : '')
-      + (jobMsg ? '<p class="serif it fade" style="font-size:19px;line-height:1.3;color:var(--saT)">' + jobMsg + '</p>' : '')
-      + '<div class="addrow" style="min-height:48px"><input id="jobOwn" placeholder="Add my own step" aria-label="Add my own job-search step" data-enter="jobOwn"><button class="iconbtn" style="background:var(--sa);color:#fff" data-a="jobOwn" aria-label="Add">' + I.plus + '</button></div>'
-      + '<div class="chips">' + (w.steps.length < 6 ? '<button class="chip" style="background:var(--sa);color:#fff" data-a="jobPickOn">+ Pick a step</button>' : '')
-      + '<button class="chip" data-a="jobQuiet"' + (w.quiet ? ' style="background:var(--tint)"' : '') + '>Nothing to apply for this week</button><button class="chip" data-a="jobHeard">I heard back</button></div>';
+      + (jobMsg ? '<p class="serif fade" style="font-size:19px;line-height:1.3;color:var(--saT)">' + jobMsg + '</p>' : '')
+      + '<div class="row" style="gap:8px"><button class="chip" style="background:var(--sa);color:#fff" data-a="jobAddSheet">+ Add a step</button><button class="chip" data-a="jobMore" aria-label="More options">···</button></div>';
   }
   return '<section class="card" style="display:flex;flex-direction:column;gap:12px">'
     + '<div class="between"><span class="row" style="gap:12px"><span class="itile sm" style="background:#96610C">' + gicon('job') + '</span><span class="eyebrow">This week · Job search</span></span><span class="small">' + (n ? n + (n === 1 ? ' step' : ' steps') + ' taken' : 'Aim for 2 or 3') + '</span></div>'
     + '<p class="serif it" style="font-size:21px;line-height:1.2">“Do your best and leave the rest.”</p>'
     + body + '</section>';
 }
+A.jobAddSheet = () => sheet('<div class="between"><span class="h2">Add a step</span>' + closeBtn('closeSheet') + '</div><div class="addrow" style="min-height:48px"><input id="jobOwn" placeholder="Write my own" aria-label="Write my own step" data-enter="jobOwn"><button class="iconbtn" style="background:var(--sa);color:#fff" data-a="jobOwn" aria-label="Add">' + I.plus + '</button></div><span class="small">Or pick one, sized for today</span>' + Object.keys(JOB_BANK).map(k => '<button class="opt" data-a="jobAdd" data-k="' + k + '"><span class="eyebrow" style="display:block;font-size:10px">' + k + '</span>' + esc(JOB_BANK[k][day().mode || 'steady']) + '</button>').join(''));
+A.jobMore = () => sheet('<div class="between"><span class="h2">Job search</span>' + closeBtn('closeSheet') + '</div><button class="opt" data-a="jobQuiet">Nothing to apply for this week</button><button class="opt" data-a="jobHeard">I heard back</button>');
 A.jobPickOn = () => { jobPick = true; jobMsg = ''; render(true); };
 A.jobPickOff = () => { jobPick = null; render(true); };
-A.jobAdd = el => { const k = el.dataset.k; jobWeek().steps.push({ t: JOB_BANK[k][day().mode], type: k, done: false }); jobPick = null; save('job'); render(true); };
+A.jobAdd = el => { const k = el.dataset.k; jobWeek().steps.push({ t: JOB_BANK[k][day().mode || 'steady'], type: k, done: false }); jobPick = null; save('job'); closeSheet(); render(true); };
 A.jobTog = el => { const s = jobWeek().steps[+el.dataset.i]; s.done = !s.done; if (s.done) { s.date = TODAY; const r = el.querySelector('.box').getBoundingClientRect(); burstAt(r.left + 12, r.top + 12, 12); buzz(); } save('job'); render(true); };
-A.jobOwn = () => { const i = $('#jobOwn'), v = i && i.value.trim(); if (!v) return; jobWeek().steps.push({ t: v, type: 'Own', done: false }); save('job'); render(true); };
-A.jobQuiet = () => { const w = jobWeek(); w.quiet = true; save('job'); jobMsg = 'Some weeks there\'s nothing to apply for. That\'s the market, not you. Rest counts too.'; render(true); };
-A.jobHeard = () => { jobMsg = '“' + HEARD_BACK[Math.floor(Math.random() * HEARD_BACK.length)] + '” Whenever you\'re ready, a steady step or some rest.'; render(true); };
+A.jobOwn = () => { const i = $('#jobOwn'), v = i && i.value.trim(); if (!v) return; jobWeek().steps.push({ t: v, type: 'Own', done: false }); save('job'); closeSheet(); render(true); };
+A.jobQuiet = () => { closeSheet(); const w = jobWeek(); w.quiet = true; save('job'); jobMsg = 'Some weeks there\'s nothing to apply for. That\'s the market, not you. Rest counts too.'; render(true); };
+A.jobHeard = () => { closeSheet(); jobMsg = '“' + HEARD_BACK[Math.floor(Math.random() * HEARD_BACK.length)] + '” Whenever you\'re ready, a steady step or some rest.'; render(true); };
 A.tog = el => {
   const dd = day(), id = el.dataset.id; dd.done[id] = !dd.done[id];
   if (id === 'rtms') { const s = S.rtms.sessions; if (dd.done[id] && !s.includes(TODAY)) s.push(TODAY); if (!dd.done[id]) S.rtms.sessions = s.filter(x => x !== TODAY); save('rtms'); }
@@ -967,11 +967,11 @@ V.checkin = () => {
   if (!CI) CI = { step: 0, q: null, w: null, tags: [], note: '', extraTags: [] };
   const top = '<div class="between"><span class="pill">' + new Date().toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' }) + '</span>' + closeBtn('ciClose') + '</div>';
   if (CI.step === 0) return '<main class="wrap nonav">' + top + '<div class="col" style="gap:8px"><h1 class="h1">How are you right now?</h1><p class="sub">Tap the one that\'s closest. No wrong answers.</p></div>'
-    + '<div class="quad">' + ['hu', 'hp', 'lu', 'lp'].map(k => '<button style="background:' + QUADS[k].bg + '" data-a="ciQ" data-k="' + k + '"><span class="e">' + QUADS[k].e + '</span><span class="l">' + QUADS[k].l + '</span></button>').join('') + '</div></main>';
+    + '<div class="quad">' + ['hu', 'hp', 'lu', 'lp'].map(k => '<button style="background:' + QUADS[k].bg + '" data-a="ciQ" data-k="' + k + '"><span class="l">' + moodName(k) + '</span></button>').join('') + '</div></main>';
   if (CI.step === 1) {
     const Q = QUADS[CI.q];
     return '<main class="wrap nonav">' + top
-      + '<div class="col fade" style="gap:8px"><span class="eyebrow" style="color:' + Q.bg + '">' + Q.e + ' · ' + Q.l + '</span><h1 class="h1">Which word fits?</h1></div>'
+      + '<div class="col fade" style="gap:8px"><span class="eyebrow" style="color:' + Q.bg + '">' + moodName(CI.q) + '</span><h1 class="h1">Which word fits?</h1></div>'
       + '<div class="chips" style="gap:10px">' + Q.words.map(w => '<button class="chip" style="min-height:48px;padding:10px 18px;font-size:16px;' + (CI.w === w ? 'background:' + Q.bg + ';color:#fff' : '') + '" data-a="ciW" data-w="' + w + '" aria-pressed="' + (CI.w === w) + '">' + w + '</button>').join('') + '</div>'
       + '<div class="col" style="gap:10px"><span class="h2">What\'s happening?</span><span class="small">Optional</span><div class="chips">' + TAGS.concat(CI.extraTags).map(t => '<button class="chip' + (CI.tags.includes(t) ? ' on' : '') + '" data-a="ciT" data-t="' + esc(t) + '">' + esc(t) + '</button>').join('') + '</div>'
       + '<div class="addrow" style="min-height:48px"><input id="ciOwn" placeholder="Add your own" aria-label="Add your own tag" data-enter="ciOwn"><button class="iconbtn" data-a="ciOwn" aria-label="Add">' + I.plus + '</button></div></div>'
@@ -994,7 +994,7 @@ A.ciW = el => { CI.w = el.dataset.w; render(true); };
 A.ciT = el => { const t = el.dataset.t, i = CI.tags.indexOf(t); if (i > -1) CI.tags.splice(i, 1); else CI.tags.push(t); render(true); };
 A.ciOwn = () => { const v = $('#ciOwn').value.trim(); if (!v) return; CI.extraTags.push(v); CI.tags.push(v); render(true); };
 INP.ciNote = el => { CI.note = el.value; };
-A.ciSave = () => { if (!CI.w) return; day().checkins.push({ at: new Date().toTimeString().slice(0, 5), q: CI.q, w: CI.w, tags: CI.tags, note: CI.note }); save('days/' + TODAY); CI.step = 2; render(); setTimeout(() => { const o = $('.orb'); if (o) { const r = o.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, 18, [QUADS[CI.q].bg, '#F6B48A', '#FFFFFF']); } }, 350); };
+A.ciSave = () => { if (!CI.w) return; day().checkins = [{ at: new Date().toTimeString().slice(0, 5), q: CI.q, w: CI.w, tags: CI.tags, note: CI.note }]; save('days/' + TODAY); CI.step = 2; render(); setTimeout(() => { const o = $('.orb'); if (o) { const r = o.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, 18, [QUADS[CI.q].bg, '#F6B48A', '#FFFFFF']); } }, 350); };
 A.ciClose = () => { CI = null; stack = []; go('today', null, { replace: true }); };
 A.ciCalm = () => { CI = null; go('calm', null, { replace: true }); };
 A.ciSafety = () => { CI = null; go('safety', null, { replace: true }); };
@@ -1034,24 +1034,29 @@ V.calm = () => {
     + '<section class="calmTop"><span class="eyebrow" style="color:var(--peachT)">Breathe</span><div class="breath" aria-live="polite"><div class="rp"></div><div class="c"></div><div class="w">Ready when you are</div></div>'
     + '<span style="font-size:13px;color:#CDBBA8">Double breath in through the nose, long sigh out · 5 minutes</span><span id="breathLeft" style="font-size:14px;color:#F7F1E8;min-height:20px"></span>'
     + '<button id="breathBtn" class="btn" style="height:50px" data-a="breath">Start</button></section>'
+    + malaBanner()
     + '<section class="card player"><div class="seg" role="group" aria-label="Choose a recording" style="grid-template-columns:repeat(2,minmax(0,1fr))">' + TRACKS.map((tr, i) => '<button class="' + (trackIdx() === i ? 'on' : '') + '" style="height:auto;min-height:40px;padding:6px 8px;font-size:13px;line-height:1.2" data-a="pickTrack" data-i="' + i + '" aria-pressed="' + (trackIdx() === i) + '">' + tr.short + '</button>').join('') + '</div>'
     + '<div class="row"><img src="' + IMG(curTrack().img) + '" alt="' + curTrack().sub + '"><div class="col" style="gap:2px;flex:1;min-width:0"><span class="serif" style="font-size:21px;line-height:1.1">' + curTrack().title + '</span><span class="small">' + curTrack().sub + '</span></div>'
     + '<button class="iconbtn" id="playBtn" style="width:54px;height:54px;border-radius:27px;background:var(--sa);color:#fff" data-a="play" aria-label="Play">' + I.play + '</button></div>'
     + '<input type="range" id="seek" min="0" max="' + curTrack().len + '" step="1" value="0" aria-label="Position in the recording" data-in="seek">'
     + '<div class="between small"><span id="tCur">0:00</span><div class="row" style="gap:8px"><button class="chip" data-a="skip" data-s="-15" aria-label="Back 15 seconds">−15</button><button class="chip" data-a="skip" data-s="15" aria-label="Forward 15 seconds">+15</button></div><span id="tDur">20:15</span></div></section>'
-    + '<section class="card" style="display:flex;flex-direction:column;gap:12px;background:var(--tint)"><span class="eyebrow">Mind, not me</span><p class="serif" style="font-size:22px;line-height:1.3">I am atma. This heaviness is passing through my mind. It is real, and it will pass. It is not who I am.</p>'
-    + '<label for="calmName" class="small" style="color:var(--muted)">My mind is telling me that…</label><input id="calmName" class="field it" placeholder="Type it, or skip" data-in="calmName" data-enter="calmNamed" value="' + esc(calmName) + '">'
-    + (calmMsg ? '<p class="fade" style="font-size:15px;color:var(--saT)">' + calmMsg + '</p>' : '')
-    + '<button class="link" style="align-self:flex-start" data-a="openTeach" data-t="Body and soul">Read “Body and soul”</button></section>'
-    + malaBanner()
-    + '<section class="col" style="gap:12px"><h2 class="h2">Words from the gurus</h2><div class="carousel">' + q.map(x => '<div class="card" style="width:min(82%,340px);display:flex;flex-direction:column;gap:10px;justify-content:space-between"><p class="quote" style="font-size:20px">“' + esc(x.t) + '”</p><div class="col" style="gap:2px"><span class="by">' + esc(x.by) + '</span><span class="small">' + esc(x.src) + '</span></div></div>').join('') + '</div></section>'
     + '<section class="col" style="gap:10px"><h2 class="h2">People</h2>'
     + (trusted ? '<div class="card between"><div class="col"><span style="font-weight:600;font-size:16px">Call ' + esc(trusted.name) + '</span><span class="small" style="user-select:all">' + esc(trusted.phone) + '</span></div><a class="iconbtn" style="background:var(--sa);color:#fff" href="tel:' + esc(trusted.phone.replace(/\s/g, '')) + '" aria-label="Call ' + esc(trusted.name) + '">' + I.phone + '</a></div>'
       : '<button class="card between" style="border:none;text-align:left" data-a="go" data-v="safety"><span class="col"><span style="font-weight:600;font-size:16px">Call someone I trust</span><span class="small">Add them in your safety plan</span></span>' + I.right + '</button>')
     + '<button class="btn soft" data-a="go" data-v="safety">My safety plan</button></section>'
+    + '<button class="card between" style="border:none;text-align:left;width:100%" data-a="calmMore"><span class="col" style="gap:2px"><span class="serif" style="font-size:20px">Words to hold on to</span><span class="small">Mind, not me · words from the gurus</span></span><span class="chev" style="' + (calmMore ? 'transform:rotate(180deg)' : '') + '">' + I.down + '</span></button>'
+    + (calmMore ? ''
+    + '<section class="card" style="display:flex;flex-direction:column;gap:12px;background:var(--tint)"><span class="eyebrow">Mind, not me</span><p class="serif" style="font-size:22px;line-height:1.3">I am atma. This heaviness is passing through my mind. It is real, and it will pass. It is not who I am.</p>'
+    + '<label for="calmName" class="small" style="color:var(--muted)">My mind is telling me that…</label><input id="calmName" class="field it" placeholder="Type it, or skip" data-in="calmName" data-enter="calmNamed" value="' + esc(calmName) + '">'
+    + (calmMsg ? '<p class="fade" style="font-size:15px;color:var(--saT)">' + calmMsg + '</p>' : '')
+    + '<button class="link" style="align-self:flex-start" data-a="openTeach" data-t="Body and soul">Read “Body and soul”</button></section>'
+    + '<section class="col" style="gap:12px"><h2 class="h2">Words from the gurus</h2><div class="carousel">' + q.map(x => '<div class="card" style="width:min(82%,340px);display:flex;flex-direction:column;gap:10px;justify-content:space-between"><p class="quote" style="font-size:20px">“' + esc(x.t) + '”</p><div class="col" style="gap:2px"><span class="by">' + esc(x.by) + '</span><span class="small">' + esc(x.src) + '</span></div></div>').join('') + '</div></section>'
+    : '')
     + '<section class="col" style="gap:10px;align-items:center;text-align:center;padding-top:6px"><span class="serif it" style="font-size:20px">How do you feel now?</span><div class="chips" style="justify-content:center">' + ['A bit lighter', 'The same', 'Heavier'].map(t => '<button class="chip" data-a="calmAfter" data-t="' + t + '">' + t + '</button>').join('') + '</div><p id="calmAfterMsg" class="small" style="min-height:20px"></p></section>'
     + '</main>';
 };
+let calmMore = false;
+A.calmMore = () => { calmMore = !calmMore; render(true); };
 V.calm_after = () => bindPlayer();
 INP.calmName = el => { calmName = el.value; };
 A.calmNamed = () => { if (calmName.trim().length < 2) return; calmMsg = 'That\'s the mind talking, not you. You are atma, watching the thought pass.'; render(true); };
@@ -1097,7 +1102,7 @@ V.feed = p => {
   buildFeed();
   if (p && p.start) FEED.unshift(p.start);
   return '<div class="feed" role="region" aria-label="Darshan feed"><div class="top"><span class="pill" style="background:rgba(255,255,255,.18);color:#fff;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)">Darshan</span><span class="row" style="gap:8px"><button class="glass" data-a="go" data-v="mydarshan" aria-label="Add my own darshan">' + I.plus + '</button><button class="glass" data-a="feedClose" aria-label="Close">' + I.close + '</button></span></div>'
-    + '<div class="side"><button class="glass" data-a="feedMove" data-d="-1" aria-label="Previous">' + I.up + '</button><button class="glass heart" id="heart" data-a="feedSave" aria-label="Save this darshan">' + I.heart(false) + '</button><button class="glass" data-a="feedShare" aria-label="Share this darshan">' + I.share + '</button><button class="glass" data-a="feedMove" data-d="1" aria-label="Next">' + I.down + '</button></div>'
+    + '<div class="side"><button class="glass heart" id="heart" data-a="feedSave" aria-label="Save this darshan">' + I.heart(false) + '</button><button class="glass" data-a="feedShare" aria-label="Share this darshan">' + I.share + '</button></div>'
     + '<div class="sc' + (feedHidden ? ' hidden' : '') + '" id="feedSc">' + FEED.map((f, k) => { const v = pairView(f); return '<div class="it" data-k="' + k + '">' + imgTag(v, v.mine ? 'My darshan photo' : 'Darshan murti', (k > 2 && !v.photo ? 'loading="lazy" ' : '') + 'decoding="async"') + '<button class="tap" aria-label="Show or hide the words"></button><div class="q">' + (v.mine ? '<span class="pill" style="height:24px;font-size:11px;background:rgba(255,255,255,.2);color:#fff;margin-bottom:10px">My darshan</span>' : '') + '<p>“' + esc(v.t) + '”</p><div class="by" style="color:var(--peachT)">' + esc(v.by) + '</div></div></div>'; }).join('') + '</div></div>';
 };
 function feedIdx() { const sc = $('#feedSc'); return sc ? Math.round(sc.scrollTop / sc.clientHeight) : 0; }
@@ -1530,7 +1535,7 @@ function moodSection() {
     return '<div class="col" style="align-items:center;gap:4px"><span style="width:22px;height:22px;border-radius:11px;' + (last ? 'background:' + QUADS[last.q].bg : 'background:var(--line)') + '"></span><span style="font-size:10px;color:var(--faint)">' + parse(d).getDate() + '</span></div>'; }).join('');
   return '<section class="card col" style="gap:14px"><div class="between"><span class="serif" style="font-size:22px">How I\'ve been feeling</span><span class="small">Last 14 days</span></div>'
     + '<div style="display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:2px">' + strip + '</div>'
-    + '<div class="chips" style="gap:10px">' + Object.keys(QUADS).map(k => '<span class="small row" style="gap:5px"><span style="width:10px;height:10px;border-radius:5px;background:' + QUADS[k].bg + '"></span>' + QUADS[k].e.replace(' energy', '') + ', ' + QUADS[k].l.toLowerCase() + '</span>').join('') + '</div>'
+    + '<div class="chips" style="gap:10px">' + Object.keys(QUADS).map(k => '<span class="small row" style="gap:5px"><span style="width:10px;height:10px;border-radius:5px;background:' + QUADS[k].bg + '"></span>' + moodName(k) + '</span>').join('') + '</div>'
     + (all.length ? '<div class="col">' + all.slice(0, 6).map(c => '<div class="row divrow" style="gap:12px;padding:10px 0;align-items:flex-start"><span style="width:12px;height:12px;border-radius:6px;margin-top:5px;flex-shrink:0;background:' + QUADS[c.q].bg + '"></span><span class="col" style="gap:2px;min-width:0"><span style="font-weight:600">' + esc(c.w) + ' <span class="small" style="font-weight:400">· ' + shortDate(c.d).replace(/^\w+ /, '') + ', ' + esc(c.at) + '</span></span>' + ((c.tags || []).length ? '<span class="small">' + esc(c.tags.join(' · ')) + '</span>' : '') + (c.note ? '<span style="font-size:14px;color:var(--ink2)">' + esc(c.note) + '</span>' : '') + '</span></div>').join('') + '</div>'
       : '<p class="sub">Check in whenever you like. Patterns appear after a week or two.</p>')
     + '<button class="btn soft sm" style="align-self:flex-start" data-a="go" data-v="checkin">Check in now</button></section>';
@@ -1886,12 +1891,12 @@ function checkinBlock(dd) {
     + '<div class="mood4">' + MOODS.map(([k, l]) => '<button style="background:' + QUADS[k].bg + '" data-a="ciStart" data-k="' + k + '">' + l + '</button>').join('') + '</div></section>';
 }
 function duoTiles(dd) {
-  const cs = dd.checkins || [], last = cs[cs.length - 1], h = now().getHours(), reopen = last && h >= 13 && toMins(last.at) < 13 * 60, ciDue = !last || reopen;
+  const cs = dd.checkins || [], last = cs[cs.length - 1], h = now().getHours(), reopen = false, ciDue = !last;
   const sl = dd.sleep, slLogged = sl && sl.bed, slDue = !slLogged && !(sl && sl.skipped) && h < 15 && !OWNER;
   const tile = (a, v, ic, title, sub, due) => '<button class="duo' + (due ? ' due' : '') + '" data-a="' + a + '" data-v="' + v + '"><span class="duoic">' + ic + (due ? '<i class="duedot"></i>' : '') + '</span><span class="col" style="gap:2px;min-width:0"><span class="serif" style="font-size:20px;line-height:1.1">' + title + '</span><span class="small">' + sub + '</span></span></button>';
   const face = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1.8 1.6 5.2 1.6 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>';
   return '<div class="duorow">'
-    + tile('go', 'checkin', face, ciDue ? (reopen ? 'How\'s the afternoon?' : 'How are you?') : (last.q === 'hp' || last.q === 'lp' ? esc(last.w) : 'Checked in'), ciDue ? 'Check in' : mins(toMins(last.at)), ciDue)
+    + tile('go', 'checkin', face, ciDue ? (reopen ? 'How\'s the afternoon?' : 'How are you?') : (last.q === 'hp' || last.q === 'lp' ? esc(last.w) : 'Checked in'), ciDue ? 'Check in' : 'Tap to change', ciDue)
     + tile('go', slDue ? 'sleeplog' : 'sleep', '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + G_ICON.sleep + '</svg>', slLogged ? fmtH(sleepHours(sl)) : 'Sleep', slLogged ? 'last night' : slDue ? 'How did you sleep?' : 'Your nights', slDue)
     + '</div>';
 }
@@ -1916,7 +1921,7 @@ V.today = () => {
     + noteCard()
     + (welcome ? '<p class="serif fade" style="font-size:21px;color:var(--saT)">' + welcome + '</p>' : '')
     + '<div class="seg" role="group" aria-label="How is today?">' + ['good', 'steady', 'hard'].map(k => '<button class="' + (mode === k ? 'on' : '') + '" data-a="mode" data-k="' + k + '" aria-pressed="' + (mode === k) + '">' + ({ good: 'Good day', steady: 'Steady', hard: 'Hard day' })[k] + '</button>').join('') + '</div>'
-    + '<p class="small" style="margin-top:-12px;line-height:1.5">' + MODE_LINE[mode] + ' <button class="link" style="font-size:13px" data-a="go" data-v="setup">Edit</button></p>'
+    + (showModeLine() ? '<p class="small" style="margin-top:-12px;line-height:1.5">' + MODE_LINE[mode] + ' <button class="link" style="font-size:13px" data-a="go" data-v="setup">Edit</button></p>' : '')
     + duoTiles(dd)
     + pin + sleepCard
     + '<div class="col" style="gap:10px">' + items.map(task).join('')
@@ -2209,6 +2214,14 @@ function malaLoop() {
 
 A.viewOnlyTog = () => { try { localStorage.setItem('prapti-viewonly', viewOnly() ? '0' : '1'); } catch (e) {} render(true); toast(viewOnly() ? 'View only on' : 'View only off. Your taps change her app.'); };
 
+function moodName(k) { return (MOODS.find(m => m[0] === k) || ['', ''])[1]; }
+
+function patternsReady() { return Object.values(S.days).filter(d => d && d.date <= TODAY && ((d.sleep && d.sleep.bed) || (d.checkins || []).length)).length >= 14; }
+
+let modeChanged = false;
+function showModeLine() { if (modeChanged) return true; const first = Object.keys(S.days).filter(k => S.days[k] && S.days[k].begun).sort()[0]; return !first || first >= addDays(TODAY, -6); }
+{ const f = A.mode; A.mode = (el, e) => { modeChanged = true; return f(el, e); }; }
+
 /* ===== Weekly check-in (PHQ-9) ===== */
 const PHQ = ['Little interest or pleasure in doing things', 'Feeling down, depressed, or hopeless', 'Trouble falling or staying asleep, or sleeping too much', 'Feeling tired or having little energy', 'Poor appetite or overeating', 'Feeling bad about yourself, or that you are a failure or have let yourself or your family down', 'Trouble concentrating on things, such as reading the newspaper or watching television', 'Moving or speaking so slowly that other people could have noticed; or the opposite, being so fidgety or restless that you have been moving around a lot more than usual', 'Thoughts that you would be better off dead or of hurting yourself in some way'];
 const PHQA = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
@@ -2271,25 +2284,28 @@ V.me = () => {
     + '<section class="card col" style="gap:14px"><div class="between"><span class="serif" style="font-size:22px">This week</span><span class="small">' + (n ? n + (n === 1 ? ' day' : ' days') + ' you showed up' : 'A fresh week') + '</span></div><div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">' + strip + '</div><span class="small">The lotus marks sabha.</span></section>'
     + '<button class="darkcard col" data-a="go" data-v="weekly" style="border:none;text-align:left;gap:12px"><div class="between" style="width:100%"><span class="serif" style="font-size:22px">Weekly check-in</span><span style="font-size:13px;color:var(--peachT)">' + (wks.length && wks[wks.length - 1] >= ws ? 'Done this week' : 'Due Sunday') + '</span></div>'
     + (wks.length ? trendSVG(true) + '<span style="font-size:13px;color:#CDBBA8">Lower is lighter.</span>' : '<span style="font-size:14px;color:#CDBBA8">Nine quick questions, once a week. Your line appears here.</span>') + '</button>'
-    + journalCard()
     + moodSection()
-    + patternsCard(false)
+    + (patternsReady() ? patternsCard(false) : '')
     + myAppSection()
-    + '<section class="col"><h2 class="h2" style="margin-bottom:4px">Settings</h2>'
+    + '<section class="col"><h2 class="h2" style="margin-bottom:4px">My day</h2>'
     + row('My daily tasks', S.settings.tasks.length ? esc(S.settings.tasks.map(t => t.t).slice(0, 3).join(' · ')) + (S.settings.tasks.length > 3 ? ' …' : '') : 'None yet', 'go', 'setup')
-    + row('My safety plan', S.safety.people.length ? S.safety.people.length + (S.safety.people.length === 1 ? ' person' : ' people') + ' and your steps' : 'Fill it in on a good day', 'go', 'safety')
     + row('Sleep', sleepSummary(), 'go', 'sleep')
-    + row('My darshan photos', ownList().length ? ownList().length + ' added' : 'Add your own photos and quotes', 'go', 'mydarshan')
-    + row('Appearance', ({ auto: 'Automatic', light: 'Light', dark: 'Dark' })[S.settings.theme || 'auto'], 'themePick')
     + row('Sabha time', S.settings.sabhaTime ? 'Saturdays at ' + mins(toMins(S.settings.sabhaTime)) : 'Set it for your Saturday reminder', 'sabhaPick')
-    + (OWNER ? row('Leave a surprise note', 'Appears on her Today screen', 'noteNew') : notesList().length ? row('Notes', notesList().length + (notesList().length === 1 ? ' note' : ' notes'), 'go', 'notes') : '')
+    + '</section>'
+    + '<section class="col"><h2 class="h2" style="margin-bottom:4px">My space</h2>'
+    + row('My safety plan', S.safety.people.length ? S.safety.people.length + (S.safety.people.length === 1 ? ' person' : ' people') + ' and your steps' : 'Fill it in on a good day', 'go', 'safety')
+    + row('My darshan photos', ownList().length ? ownList().length + ' added' : 'Add your own photos and quotes', 'go', 'mydarshan')
     + row('Saved darshan', S.saved.darshan.length ? S.saved.darshan.length + ' saved' : 'Tap the heart in Darshan', 'go', 'saved')
-    + (hidden('rtms') ? (S.rtms.sessions.length ? row('rTMS report', S.rtms.sessions.length + ' sessions', 'go', 'report') : '') : row('rTMS', S.rtms.sessions.length ? S.rtms.sessions.length + (S.rtms.sessions.length === 1 ? ' session' : ' sessions') : 'Guide and session counter', 'go', 'rtms'))
-    + '<div class="setrow" style="cursor:default"><span class="col" style="gap:2px"><span style="font-size:16px;font-weight:600">' + (!navigator.onLine ? 'Offline · saving on this phone' : dirty.size ? 'Saving…' : 'Saved to the cloud ✓') + '</span><span class="small">' + (!navigator.onLine ? 'Everything will upload when you\'re back online.' : dirty.size ? dirty.size + ' change' + (dirty.size === 1 ? '' : 's') + ' waiting to upload' + (lastErr ? ' (' + esc(lastErr) + ')' : '') : 'Everything you add is saved as you go.') + '</span></span></div>'
-    + row('Something not working?', 'Copy a report if something breaks', 'diag')
-    + row('Save a backup file', 'Everything you\'ve written, as a file', 'backupDl')
+    + (OWNER ? row('Leave a surprise note', 'Appears on her Today screen', 'noteNew') : notesList().length ? row('Notes', notesList().length + (notesList().length === 1 ? ' note' : ' notes'), 'go', 'notes') : '')
+    + (hidden('rtms') && S.rtms.sessions.length ? row('rTMS report', S.rtms.sessions.length + ' sessions', 'go', 'report') : '')
     + (deletedItems().length ? row('Recently deleted', deletedItems().length + ' you can restore', 'go', 'trash') : '')
-        + row('Sign out', USER ? esc(USER.email) : '', 'signOut')
+    + '</section>'
+    + '<section class="col"><h2 class="h2" style="margin-bottom:4px">App</h2>'
+    + row('Appearance', ({ auto: 'Automatic', light: 'Light', dark: 'Dark' })[S.settings.theme || 'auto'], 'themePick')
+    + '<div class="setrow" style="cursor:default"><span class="col" style="gap:2px"><span style="font-size:16px;font-weight:600">' + (!navigator.onLine ? 'Offline · saving on this phone' : dirty.size ? 'Saving…' : 'Saved to the cloud ✓') + '</span><span class="small">' + (!navigator.onLine ? 'Everything will upload when you\'re back online.' : dirty.size ? dirty.size + ' change' + (dirty.size === 1 ? '' : 's') + ' waiting to upload' + (lastErr ? ' (' + esc(lastErr) + ')' : '') : 'Everything you add is saved as you go.') + '</span></span></div>'
+    + row('Save a backup file', 'Everything you\'ve written, as a file', 'backupDl')
+    + row('Something not working?', 'Copy a report if something breaks', 'diag')
+    + row('Sign out', USER ? esc(USER.email) : '', 'signOut')
     + '</section>'
     + '<div class="col" style="align-items:center;gap:6px;padding:8px 0 4px;text-align:center"><span style="color:var(--sa)">' + I.heart(true) + '</span><span class="serif it" style="font-size:21px;line-height:1.3;color:var(--ink2)">Made for Chhaya, with love, by Tilak</span></div>'
     + '</main>';
@@ -2376,6 +2392,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=181afd09').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=d9a7f4ef').catch(() => {}));</script>
 </body>
 </html>
