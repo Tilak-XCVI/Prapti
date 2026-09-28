@@ -448,7 +448,6 @@ body:has(.paperpage){background:#FBF6EC}
 
 /* ===== Sign in ===== */
 .login{position:relative;min-height:100vh;min-height:100dvh;max-width:480px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top,0px)) 28px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;justify-content:center;gap:40px;isolation:isolate}
-body:has(.login){overflow:hidden}
 .loginbg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--bg)}
 .loginbg i{position:absolute;border-radius:50%;filter:blur(60px)}
 .loginbg i:nth-child(1){width:80vmax;height:80vmax;left:-30vmax;top:-30vmax;background:radial-gradient(circle,rgba(240,138,75,.55),rgba(240,138,75,0) 65%);animation:lg1 14s ease-in-out infinite alternate}
@@ -2386,6 +2385,11 @@ function iconLotus(fan) {
   return s + '</svg>';
 }
 
+/* sign-in always opens at the top (iPhone restores the old scroll position after sign-out otherwise) */
+try { history.scrollRestoration = 'manual'; } catch (e) {}
+V.login_after = V.newpw_after = () => { window.scrollTo(0, 0); requestAnimationFrame(() => window.scrollTo(0, 0)); };
+{ const f = A.signOutYes; A.signOutYes = async (el, e) => { window.scrollTo(0, 0); return f(el, e); }; }
+
 /* ===== Weekly check-in (PHQ-9) ===== */
 const PHQ = ['Little interest or pleasure in doing things', 'Feeling down, depressed, or hopeless', 'Trouble falling or staying asleep, or sleeping too much', 'Feeling tired or having little energy', 'Poor appetite or overeating', 'Feeling bad about yourself, or that you are a failure or have let yourself or your family down', 'Trouble concentrating on things, such as reading the newspaper or watching television', 'Moving or speaking so slowly that other people could have noticed; or the opposite, being so fidgety or restless that you have been moving around a lot more than usual', 'Thoughts that you would be better off dead or of hurting yourself in some way'];
 const PHQA = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
@@ -2557,6 +2561,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=d85a194e').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=11fd62e2').catch(() => {}));</script>
 </body>
 </html>
