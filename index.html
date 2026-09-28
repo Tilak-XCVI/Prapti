@@ -1822,7 +1822,7 @@ V.today = () => {
   const sleepCard = (() => { const sl = S.settings.sleep; if (!sl) return ''; const h = now().getHours() * 60 + now().getMinutes(); if (h < sl.wind - 45 || h > sl.wind + 120) return ''; return '<div class="darkcard" style="background:#2F4468;display:flex;gap:14px;align-items:center"><span class="itile sm" style="background:rgba(255,255,255,.14)">' + gicon('sleep') + '</span><span class="col" style="gap:4px"><span class="eyebrow" style="color:#C9D4EA">Wind down · ' + mins(sl.wind) + '</span><span style="font-size:15px;line-height:1.4">Dim the lights, phone away, arti or dhun. Wake at ' + mins(sl.wake) + '.</span></span></div>'; })();
   const cl = all ? celeLine(items.length, mode) : null;
   return '<main class="wrap">'
-    + skyHead('<div class="between"><span class="pill">' + parse(TODAY).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + '</span>' + darshanChip() + '</div>'
+    + skyHead('<div class="between"><span class="pill">' + parse(TODAY).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '') + '</span>' + darshanChip() + '</div>'
       + '<div class="skyrow"><div class="col" style="gap:8px;min-width:0"><h1 class="hello">' + greet() + ',<br>Chhaya</h1><p class="skysub">' + todaySub(mode, items.length, done) + '</p></div>' + lotusSVG(items.length, done) + '</div>')
     + (OWNER ? '<div class="card" style="background:var(--pill);font-size:14px;line-height:1.45"><b>This is Chhaya\'s app.</b> Anything you tick or type here saves to her data.</div>' : '')
     + noteCard()
@@ -2237,6 +2237,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=87083964').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=403aad80').catch(() => {}));</script>
 </body>
 </html>
