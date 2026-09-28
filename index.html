@@ -467,7 +467,7 @@ body:has(.login){overflow:hidden}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .themeSw{background:rgba(36,26,20,.5)}}
 .lgMark{display:flex;flex-direction:column;align-items:center;gap:18px}
 .lgIcon{width:92px;height:92px;border-radius:28px;background:linear-gradient(160deg,#DB6A1E,#B84A0B);display:flex;align-items:center;justify-content:center;box-shadow:0 20px 44px rgba(184,74,11,.32),inset 0 1px 0 rgba(255,255,255,.25);animation:iconIn 1s cubic-bezier(.2,.9,.25,1.1) both}
-.lgIcon svg{width:66px;height:58px;overflow:visible}
+.lgIcon svg{width:72px;height:63px;margin-top:-6px;overflow:visible}
 .lgWord svg{width:100%;height:auto;display:block}
 .fanp{transform-box:view-box;transform-origin:60px 92px;animation:fanopen .9s cubic-bezier(.2,.8,.2,1.1) both}
 @keyframes fanopen{from{transform:rotate(var(--a));opacity:.4}}
@@ -516,6 +516,9 @@ body:has(.login){overflow:hidden}
 .avplus{position:absolute;right:-3px;bottom:-3px;width:24px;height:24px;border-radius:12px;background:var(--sa);color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
 .avplus svg{width:12px;height:12px}
 .avatar:has(img) .avplus{display:none}
+
+.nav .lotus{background:linear-gradient(160deg,#DE6E22,#B84A0B);box-shadow:0 8px 20px rgba(184,74,11,.3)}
+.nav .lotus svg{width:38px;height:33px;margin-top:-3px;overflow:visible}
 .into{animation:intoBox .9s cubic-bezier(.5,0,.7,1) both}
 @keyframes intoBox{0%{transform:none;opacity:1}60%{transform:translateY(90px) scale(.5);opacity:.8}100%{transform:translateY(120px) scale(.2);opacity:0}}
 .lid{transform-origin:10% 100%;animation:lid 1.2s ease-in-out both}
@@ -809,7 +812,7 @@ function render(keepScroll) {
 }
 function navHTML(on) {
   const b = (k, l, a) => '<button class="' + (on === k ? 'on' : '') + '" data-a="' + a + '"' + (on === k ? ' aria-current="page"' : '') + '>' + I[k] + l + '</button>';
-  return '<div class="in">' + b('today', 'Today', 'goToday') + b('darshan', 'Darshan', 'goFeed') + '<button class="lotus" data-a="goCalm" aria-label="Calm space">' + I.lotus + '</button>' + b('grow', 'Grow', 'goGrow') + b('me', 'Me', 'goMe') + '</div>';
+  return '<div class="in">' + b('today', 'Today', 'goToday') + b('darshan', 'Darshan', 'goFeed') + '<button class="lotus" data-a="goCalm" aria-label="Calm space">' + iconLotus(false) + '</button>' + b('grow', 'Grow', 'goGrow') + b('me', 'Me', 'goMe') + '</div>';
 }
 const closeBtn = (a, label) => '<button class="iconbtn" data-a="' + (a || 'back') + '" aria-label="' + (label || 'Close') + '">' + I.close + '</button>';
 
@@ -2305,7 +2308,7 @@ function lgShell(inner) {
   const th = effTheme();
   return '<main class="login"><div class="loginbg" aria-hidden="true"><i></i><i></i><i></i><i></i></div>'
     + '<div class="themeSw" role="group" aria-label="Appearance"><button class="' + (th === 'light' ? 'on' : '') + '" data-a="lgTheme" data-t="light" aria-label="Day mode"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button><button class="' + (th === 'dark' ? 'on' : '') + '" data-a="lgTheme" data-t="dark" aria-label="Night mode"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + G_ICON.sleep + '</svg></button></div>'
-    + '<div class="lgMark"><span class="lgIcon"><svg viewBox="0 0 24 24" fill="none" stroke="#FFF6EC" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(0 -2.5)">' + LOTUS_PATHS + '</g></svg></span><h1 class="lgWord">' + WORDMARK + '</h1></div>'
+    + '<div class="lgMark"><span class="lgIcon">' + iconLotus(true) + '</span><h1 class="lgWord">' + WORDMARK + '</h1></div>'
     + inner + '</main>';
 }
 V.login = () => lgShell('<form class="lgForm" onsubmit="return false" novalidate>'
@@ -2554,6 +2557,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=ebbee8eb').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=865a8978').catch(() => {}));</script>
 </body>
 </html>
