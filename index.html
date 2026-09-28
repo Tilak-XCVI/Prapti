@@ -543,9 +543,10 @@ function getData(key) { const [c, id] = split(key); return c === 'app' ? S[id] :
 function setData(key, v) { const [c, id] = split(key); if (c === 'app') S[id] = v; else { S[c] = S[c] || {}; if (v === undefined) delete S[c][id]; else S[c][id] = v; } }
 function fieldsJ(o) { const r = {}; Object.keys(o || {}).forEach(f => r[f] = J(o[f])); return r; }
 function setSaveState() {}
-function save(key) { if (OWNER && !String(key).startsWith('notes/')) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); }
+function viewOnly() { try { return OWNER && localStorage.getItem('prapti-viewonly') === '1'; } catch (e) { return false; } }
+function save(key) { if (viewOnly() && !String(key).startsWith('notes/')) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); }
 async function flush() {
-  if (OWNER) [...dirty].forEach(k => { if (!k.startsWith('notes/')) dirty.delete(k); });
+  if (viewOnly()) [...dirty].forEach(k => { if (!k.startsWith('notes/')) dirty.delete(k); });
   if (!USER || !ready || flushing || !dirty.size) return;
   if (!navigator.onLine) { online = false; return; }
   flushing = true;
@@ -572,7 +573,7 @@ function removeDoc(key) { const d = getData(key); if (!d) return; d.deleted = tr
 function applyRemote(key, remote, defs) {
   const local = getData(key), b = B[key];
   let merged = Object.assign(defs ? defs() : {}, clone(remote));
-  if (local && b && !OWNER) {
+  if (local && b && !viewOnly()) {
     Object.keys(local).forEach(f => { if (J(local[f]) !== (b[f] === undefined ? J(undefined) : b[f])) { merged[f] = local[f]; dirty.add(key); } });
   } else if (local && !b && dirty.has(key)) {
     Object.keys(local).forEach(f => { if (!(f in remote)) merged[f] = local[f]; });
@@ -1900,7 +1901,7 @@ V.today = () => {
   return '<main class="wrap">'
     + skyHead('<div class="between"><span class="pill">' + parse(TODAY).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '') + '</span>' + darshanChip() + '</div>'
       + '<div class="skyrow"><h1 class="hello" style="padding-bottom:6px">' + greet() + ',<br>Chhaya</h1>' + lotusSVG(items.length, done) + '</div>')
-    + (OWNER ? '<div class="card" style="background:var(--pill);font-size:14px;line-height:1.45"><b>View only.</b> You\'re seeing Chhaya\'s app. Nothing you tick or type here reaches her, except surprise notes (in Me).</div>' : '')
+    + (viewOnly() ? '<div class="card" style="background:var(--pill);font-size:14px;line-height:1.45"><b>View only.</b> You\'re seeing Chhaya\'s app. Nothing you tick or type here reaches her, except surprise notes (in Me).</div>' : '')
     + noteCard()
     + (welcome ? '<p class="serif fade" style="font-size:21px;color:var(--saT)">' + welcome + '</p>' : '')
     + '<div class="seg" role="group" aria-label="How is today?">' + ['good', 'steady', 'hard'].map(k => '<button class="' + (mode === k ? 'on' : '') + '" data-a="mode" data-k="' + k + '" aria-pressed="' + (mode === k) + '">' + ({ good: 'Good day', steady: 'Steady', hard: 'Hard day' })[k] + '</button>').join('') + '</div>'
@@ -2085,6 +2086,7 @@ function myAppSection() {
   const ms = S.settings.milestones || {};
   const mb = (a, bg, ic, name, sub) => '<button class="setrow ic" data-a="' + a + '"><span class="itile sm" style="background:' + bg + '">' + gicon(ic) + '</span><span class="col" style="gap:2px;flex:1"><span style="font-size:16px;font-weight:600">' + name + '</span><span class="small">' + sub + '</span></span>' + I.right + '</button>';
   return '<section class="col"><h2 class="h2" style="margin-bottom:4px">My app</h2>'
+    + (OWNER ? '<div class="setrow ic"><span class="col" style="gap:2px;flex:1"><span style="font-size:16px;font-weight:600">View only (your account)</span><span class="small">On: nothing you do reaches Chhaya. Off: for testing.</span></span><button class="tg' + (viewOnly() ? '' : ' off') + '" role="switch" aria-checked="' + viewOnly() + '" aria-label="View only" data-a="viewOnlyTog"></button></div>' : '')
     + t('job', '#96610C', 'job', 'Job search', 'Weekly steps, the job guide') + t('rtms', '#A23B4F', 'rtms', 'rTMS', 'Sessions, schedule, clinic report')
     + (!ms.job && !hidden('job') ? mb('gotJob', 'linear-gradient(135deg,#D8651C,#A23B4F)', 'star', 'I got the job', 'Mark it, then tuck job search away') : '')
     + (!ms.rtms && !hidden('rtms') && S.rtms.sessions.length ? mb('rtmsDone', '#2E7556', 'leaf', 'I\'ve finished rTMS', 'Keeps your report, hides the rest') : '')
@@ -2192,7 +2194,9 @@ function malaLoop() {
 }
 
 /* ---------- view-only account: taps that would change her day just explain themselves ---------- */
-['tog', 'mode', 'addExtra', 'extraChip', 'rmExtra', 'ciSave', 'sleepSave', 'setupDone', 'jSave', 'smSave', 'malaReset', 'jobAdd', 'jobTog', 'featTog', 'msSave'].forEach(k => { const f = A[k]; if (!f) return; A[k] = (el, e) => { if (OWNER) return toast('View only on your account'); return f(el, e); }; });
+['tog', 'mode', 'addExtra', 'extraChip', 'rmExtra', 'ciSave', 'sleepSave', 'setupDone', 'jSave', 'smSave', 'malaReset', 'jobAdd', 'jobTog', 'featTog', 'msSave'].forEach(k => { const f = A[k]; if (!f) return; A[k] = (el, e) => { if (viewOnly()) return toast('View only on your account'); return f(el, e); }; });
+
+A.viewOnlyTog = () => { try { localStorage.setItem('prapti-viewonly', viewOnly() ? '0' : '1'); } catch (e) {} render(true); toast(viewOnly() ? 'View only on' : 'View only off. Your taps change her app.'); };
 
 /* ===== Weekly check-in (PHQ-9) ===== */
 const PHQ = ['Little interest or pleasure in doing things', 'Feeling down, depressed, or hopeless', 'Trouble falling or staying asleep, or sleeping too much', 'Feeling tired or having little energy', 'Poor appetite or overeating', 'Feeling bad about yourself, or that you are a failure or have let yourself or your family down', 'Trouble concentrating on things, such as reading the newspaper or watching television', 'Moving or speaking so slowly that other people could have noticed; or the opposite, being so fidgety or restless that you have been moving around a lot more than usual', 'Thoughts that you would be better off dead or of hurting yourself in some way'];
@@ -2338,7 +2342,7 @@ function boot() {
   try { localStorage.setItem('prapti-lastOpen', TODAY); } catch (e) {}
   stack = []; applyTheme();
   const h = now().getHours();
-  if (OWNER) { route = null; go('today', null, { replace: true }); return; }
+  if (viewOnly()) { route = null; go('today', null, { replace: true }); return; }
   if (h < 5 && !nightDismissed) { route = null; go('night', null, { replace: true }); }
   else if (!day().begun) { route = null; go('darshan', null, { replace: true }); }
   else if (!S.settings.setupDone) go('setup', { first: true }, { replace: true });
@@ -2361,6 +2365,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=4866dee1').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=13ce54a3').catch(() => {}));</script>
 </body>
 </html>
