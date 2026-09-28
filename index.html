@@ -441,6 +441,10 @@ body:has(.paperpage){background:#FBF6EC}
 .minichant svg{width:14px;height:14px}
 .malabg i{transition:none}
 .sky>.skybg{position:absolute;z-index:0}
+
+/* continuous motion across re-renders */
+.skybg .sun,.skybg .haze,.skybg .glow3,.skybg::before,.malabanner::before,.dsh .hero img,.duedot,.lotusP.full,.sky .sun{animation-delay:var(--t,0s)}
+#app.still .rise,#app.still .fade,#app.still .pop,#app.still .wkdot,#app.still .orb{animation:none!important}
 .into{animation:intoBox .9s cubic-bezier(.5,0,.7,1) both}
 @keyframes intoBox{0%{transform:none;opacity:1}60%{transform:translateY(90px) scale(.5);opacity:.8}100%{transform:translateY(120px) scale(.2);opacity:0}}
 .lid{transform-origin:10% 100%;animation:lid 1.2s ease-in-out both}
@@ -704,7 +708,7 @@ function showThought(ti) {
 }
 
 /* ---------- router ---------- */
-let route = null, stack = [];
+let route = null, stack = [], lastViewKey = '';
 function go(v, p, opts) {
   opts = opts || {};
   if (route && !opts.replace) stack.push(route);
@@ -718,9 +722,14 @@ const V = {};
 function render(keepScroll) {
   const y = window.scrollY;
   const html = V[route.v](route.p), app = $('#app');
-  app.classList.toggle('still', !!keepScroll);
+  const key = route.v + '|' + JSON.stringify(route.p || {}), same = key === lastViewKey; lastViewKey = key;
+  const still = !!keepScroll || same;
+  app.classList.toggle('still', still);
+  // looping background motion carries on from where it was instead of restarting
+  app.style.setProperty('--t', (-performance.now() / 1000).toFixed(2) + 's');
   app.innerHTML = html;
-  if (!keepScroll) { app.classList.remove('pagein'); void app.offsetWidth; app.classList.add('pagein'); }
+  app.classList.remove('pagein');
+  if (!still) { void app.offsetWidth; app.classList.add('pagein'); }
   const withNav = ['today', 'grow', 'me'].includes(route.v);
   $('#nav').hidden = !withNav;
   if (withNav) $('#nav').innerHTML = navHTML(route.v);
@@ -2367,6 +2376,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=24bdcb4b').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=181afd09').catch(() => {}));</script>
 </body>
 </html>
