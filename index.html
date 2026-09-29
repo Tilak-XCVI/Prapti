@@ -553,7 +553,8 @@ const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.get
 const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return ymd(d); };
 const now = () => new Date();
-let TODAY = ymd(now());
+const appDay = () => ymd(new Date(Date.now() - 4 * 3600e3));
+let TODAY = appDay();
 const dow = s => parse(s).getDay(); // 0 Sun
 const weekStart = s => addDays(s, -((dow(s) + 6) % 7)); // Monday
 const dayLabel = s => { const d = parse(s); return d.toLocaleDateString('en-GB', { weekday: 'long' }) + ' · ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }); };
@@ -713,7 +714,7 @@ window.addEventListener('pagehide', () => { if (dirty.size) flush(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) { if (dirty.size) flush(); } else { checkNewDay(); if (USER && ready) loadAll().then(remoteChanged).catch(() => {}); flush(); } });
 setInterval(checkNewDay, 30000);
 setInterval(() => { if (dirty.size) flush(); }, 20000);
-function checkNewDay() { const t = ymd(now()); if (t !== TODAY) { TODAY = t; route = null; if (USER) boot(); } }
+function checkNewDay() { const t = appDay(); if (t !== TODAY) { TODAY = t; route = null; if (USER) boot(); } }
 let pendingRender = false;
 function remoteChanged() {
   cacheLocal();
@@ -883,7 +884,7 @@ A.ownQuote = () => sheet('<div class="between"><span class="eyebrow">' + esc(dVi
 INP.prapti = el => { day().prapti = el.value; save('days/' + TODAY); };
 A.begin = () => {
   const dd = day(); const first = !dd.begun; dd.begun = true; save('days/' + TODAY); if (first) setTimeout(() => petalRain(18), 200);
-  if (!dd.sleep && now().getHours() < 15) go('sleeplog', { after: S.settings.setupDone ? 'today' : 'setup' }, { replace: true });
+  if (!(dd.sleep && (dd.sleep.bed || dd.sleep.skipped)) && now().getHours() < 15) go('sleeplog', { after: S.settings.setupDone ? 'today' : 'setup' }, { replace: true });
   else if (!S.settings.setupDone) go('setup', { first: true }, { replace: true }); else { stack = []; go('today', null, { replace: true }); }
 };
 
@@ -1778,7 +1779,7 @@ V.night = () => '<main class="wrap nonav nightwrap" style="justify-content:cente
   + '<div class="row" style="gap:10px"><button class="btn soft" style="background:#2A211C;color:#E9DCCB" data-a="nightBreathe">Breathe</button><button class="btn soft" style="background:#2A211C;color:#E9DCCB" data-a="nightMantra">Mantra</button></div>'
   + '<button class="link" style="color:#8E7F72" data-a="nightClose">Open the app instead</button></main>';
 let nightLogged = false;
-A.nightLog = () => { if (nightLogged) return; const dd = day(); dd.sleep = Object.assign({}, dd.sleep || {}); dd.sleep.night = (dd.sleep.night || []).concat([new Date().toTimeString().slice(0, 5)]); save('days/' + TODAY); nightLogged = true; render(true); };
+A.nightLog = () => { if (nightLogged) return; const tgt = now().getHours() < 4 ? addDays(TODAY, 1) : TODAY, dd = day(tgt); dd.sleep = Object.assign({}, dd.sleep || {}); dd.sleep.night = (dd.sleep.night || []).concat([new Date().toTimeString().slice(0, 5)]); save('days/' + tgt); nightLogged = true; render(true); };
 A.nightBreathe = () => { document.documentElement.setAttribute('data-theme', 'dark'); go('calm', { night: true }); };
 A.nightMantra = () => { document.documentElement.setAttribute('data-theme', 'dark'); go('calm', { night: true }); setTimeout(() => A.play(), 300); };
 A.nightClose = () => { nightDismissed = true; applyTheme(); boot(); };
@@ -1912,7 +1913,7 @@ function hap() {
 function hapPattern(ts) { ts.forEach(t => t ? setTimeout(hap, t) : hap()); }
 
 /* ---------- time of day ---------- */
-function greet() { const h = now().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
+function greet() { const h = now().getHours(); return h < 4 ? 'Still up' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
 function tod() { const h = now().getHours(); return h >= 5 && h < 11 ? 't-morn' : h >= 11 && h < 17 ? 't-day' : h >= 17 && h < 21 ? 't-eve' : 't-night'; }
 function skyHead(inner) { return '<header class="sky ' + tod() + '"><div class="skybg" aria-hidden="true"><span class="sun"></span><span class="haze"></span><span class="glow3"></span></div>' + inner + '</header>'; }
 function todayView() {
@@ -2727,6 +2728,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=be9b8f70').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=abb914c5').catch(() => {}));</script>
 </body>
 </html>
