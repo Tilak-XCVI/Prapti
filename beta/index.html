@@ -708,29 +708,25 @@ body:has(.paperpage){background:#FBF6EC}
 .admic{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .admbadge{min-width:24px;height:24px;border-radius:12px;background:var(--sa);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 7px}
 .admcard:active{transform:scale(.98)}
-/* one flame lights another */
+/* light a diya */
 .minilotus{color:#F6B48A;display:flex}
-.kscene{position:relative;width:100%;max-width:360px;height:330px;margin-top:6px;touch-action:none;-webkit-user-select:none;user-select:none}
-.kbloom{position:absolute;left:50%;top:62%;width:420px;height:300px;margin:-150px 0 0 -210px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,196,120,.42),rgba(255,196,120,0));opacity:0;transform:scale(.6);transition:opacity 1.4s ease,transform 1.8s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.kscene{position:relative;width:100%;max-width:360px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:40px 0 6px;margin-top:4px;touch-action:none;-webkit-user-select:none;user-select:none}
+.kbloom{position:absolute;left:50%;top:48%;width:420px;height:240px;margin:-120px 0 0 -210px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,196,120,.42),rgba(255,196,120,0));opacity:0;transform:scale(.6);transition:opacity 1.4s ease,transform 1.8s cubic-bezier(.2,.8,.2,1);pointer-events:none}
 .kscene.all .kbloom{opacity:1;transform:scale(1)}
-.ksrc{position:absolute;left:50%;top:0;width:110px;height:130px;margin-left:-55px;display:flex;flex-direction:column;align-items:center;cursor:grab}
-.ksrc svg.kd{position:relative;z-index:2;margin-bottom:-38px}
-.ksrclotus{color:#E07A2E;display:flex;filter:drop-shadow(0 6px 14px rgba(196,85,15,.35))}
-.kpulse{position:absolute;left:50%;top:22px;width:72px;height:72px;margin-left:-36px;border-radius:50%;border:1.5px solid rgba(224,122,46,.5);animation:kpulse 2.4s ease-out infinite}
-.kscene.carrying .kpulse,.kscene.all .kpulse{animation:none;opacity:0}
-@keyframes kpulse{0%{transform:scale(.6);opacity:0}30%{opacity:1}100%{transform:scale(1.6);opacity:0}}
-.kd[data-i]{position:absolute;width:80px;margin-left:-40px;margin-top:-45px;display:flex;flex-direction:column;align-items:center;transition:transform .5s cubic-bezier(.2,.8,.2,1.3)}
-.kd[data-i] svg{overflow:visible;filter:saturate(.55) brightness(.92);transition:filter .6s}
+.kd[data-i]{position:relative;display:flex;flex-direction:column;align-items:center;cursor:grab;transition:transform .5s cubic-bezier(.2,.8,.2,1.3)}
+.kd[data-i] svg{overflow:visible;filter:saturate(.55) brightness(.92);transition:filter .6s,transform .2s;transform:translateY(calc(var(--lift,0) * -6px))}
+.kd[data-i].press svg{filter:saturate(.8) brightness(1)}
 .kd[data-i].on svg{filter:drop-shadow(0 8px 16px rgba(224,112,30,.35))}
-.kd .flame{transform-box:view-box;transform-origin:40px 53px}
-.kd[data-i] .flame{transform:scale(0);opacity:0}
-.kd.on .flame{opacity:1;transform:scale(1)}
-.kd[data-i].on .flame{animation:kign .8s cubic-bezier(.2,.8,.2,1.35) both}
+.kd .flame{transform-box:view-box;transform-origin:40px 53px;transform:scale(0);opacity:0}
+.kd.on .flame{opacity:1;animation:kign .8s cubic-bezier(.2,.8,.2,1.35) both}
 .kd .fl{transform-box:view-box;transform-origin:40px 53px;animation:kflick 2.2s ease-in-out infinite alternate}
 .kd .glow{transform-box:view-box;transform-origin:40px 34px;opacity:0}
 .kd.on .glow{opacity:1;animation:kglow 3.2s ease-in-out infinite alternate}
-.kscene.all .kd[data-i] .glow{animation:kglow2 3.2s ease-in-out infinite alternate}
-.kscene.all .kd[data-i]{transform:translateY(-6px)}
+.kscene.all .kd .glow{animation:kglow2 3.2s ease-in-out infinite alternate}
+.kscene.all .kd[data-i]{transform:translateY(-4px)}
+.kup{position:absolute;left:50%;top:-6px;width:12px;height:12px;margin-left:-6px;border-left:2px solid rgba(196,85,15,.55);border-top:2px solid rgba(196,85,15,.55);transform:rotate(45deg);animation:kupa 1.8s ease-in-out infinite}
+.kd.on .kup{display:none}
+@keyframes kupa{0%{transform:translateY(14px) rotate(45deg);opacity:0}40%{opacity:1}100%{transform:translateY(-6px) rotate(45deg);opacity:0}}
 @keyframes kign{0%{transform:scale(0) translateY(6px);opacity:0}60%{opacity:1}100%{transform:scale(1);opacity:1}}
 @keyframes kflick{0%{transform:scale(1,1) skewX(0)}35%{transform:scale(.96,1.05) skewX(2.5deg)}70%{transform:scale(1.03,.97) skewX(-2deg)}100%{transform:scale(.98,1.03) skewX(1deg)}}
 @keyframes kglow{0%{transform:scale(.9);opacity:.8}100%{transform:scale(1.12);opacity:1}}
@@ -740,13 +736,11 @@ body:has(.paperpage){background:#FBF6EC}
 @keyframes kringa{0%{transform:scale(.2);opacity:1}100%{transform:scale(2.2);opacity:0}}
 .kspark{position:absolute;left:50%;top:26px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#FFD27A;box-shadow:0 0 6px #FFB347;animation:kspark 1.1s ease-out both;pointer-events:none}
 @keyframes kspark{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0}}
-.klab{margin-top:4px;width:110px;text-align:center;font-size:12.5px;line-height:1.3;color:var(--faint);transition:color .6s}
+.klab{margin-top:6px;text-align:center;font-size:13px;line-height:1.3;color:var(--faint);transition:color .6s}
 .kd.on .klab{color:var(--ink)}
-.kcarry{position:absolute;left:0;top:0;pointer-events:none;opacity:0;transition:opacity .3s;z-index:5}
-.kscene.carrying .kcarry{opacity:1}
 .kline{transition:opacity .9s,transform .9s}.kline.hide{opacity:0;transform:translateY(8px)}
 .ktap{font-size:13px;opacity:.75}
-@media (prefers-reduced-motion: reduce){.kd .fl,.kd.on .glow,.kpulse,.kscene.all .kd[data-i] .glow{animation:none}}
+@media (prefers-reduced-motion: reduce){.kd .fl,.kd.on .glow,.kup,.kscene.all .kd .glow{animation:none}}
 .into{animation:intoBox .9s cubic-bezier(.5,0,.7,1) both}
 @keyframes intoBox{0%{transform:none;opacity:1}60%{transform:translateY(90px) scale(.5);opacity:.8}100%{transform:translateY(120px) scale(.2);opacity:0}}
 .lid{transform-origin:10% 100%;animation:lid 1.2s ease-in-out both}
@@ -3728,9 +3722,9 @@ V.kind = p => {
     body = '<span class="eyebrow">Notice it</span><h1 class="h1 kh">' + (KD.word ? 'This is a moment of ' + KD.word.toLowerCase() + '.' : 'Name what you feel.') + '</h1><p class="sub">' + (KD.word ? 'It\'s real, and it\'s allowed. Like every feeling, it will pass.' : 'Naming a feeling softens it. Tap the closest word.') + '</p><div class="kchips">' + KWORD.map(w => '<button class="kchip' + (KD.word === w ? ' on' : '') + '" data-a="kWord" data-w="' + w + '">' + w + '</button>').join('') + '</div>';
     next = KD.word ? 'Next' : 'Skip'; }
   else if (s === 3) {
-    body = '<span class="eyebrow">You\'re not alone</span><h1 class="h1 kh">One flame lights another.</h1><p class="sub" id="khint">' + (KD.lit >= 3 ? 'Three lights, and none of them alone.' : 'Hold the flame on the lotus, then carry it to each diya.') + '</p>' + diyaScene()
+    body = '<span class="eyebrow">You\'re not alone</span><h1 class="h1 kh">Light a diya.</h1><p class="sub">Swipe up on each one. Maharaj &amp; Swami are with you in this moment.</p>' + diyaScene()
       + '<p class="serif it kline' + (KD.lit >= 3 ? '' : ' hide') + '" id="kline">Right now, many people feel exactly as you do. You are held.</p>'
-      + '<button class="link ktap" data-a="kLight"' + (KD.lit >= 3 ? ' style="visibility:hidden"' : '') + '>Can\'t drag? Tap to light them</button>';
+      + '<button class="link ktap" data-a="kLight"' + (KD.lit >= 3 ? ' style="visibility:hidden"' : '') + '>Can\'t swipe? Tap to light them</button>';
     next = KD.lit >= 3 ? 'Next' : 'Skip'; }
   else if (s === 4) {
     const L = KPHRASE[KD.feel || 'other'];
@@ -3789,54 +3783,37 @@ function kindCard() {
 /* the check-in page always starts fresh unless it was opened by choosing a feeling */
 { const f = A.go; A.go = (el, e) => { if (el.dataset.v === 'checkin') CI = null; return f(el, e); }; }
 
-/* ---------- "One flame lights another": carry the flame from the lotus to each diya ---------- */
-const KDLAB = ['You, right now', 'Everyone who feels this today', 'The people who love you'];
+/* ---------- Light a diya: swipe up on each one ---------- */
+const KDLAB = ['For you', 'For everyone who feels this', 'For those who love you'];
 const KDEFS = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'
   + '<linearGradient id="kfl" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#E0701E"/><stop offset=".55" stop-color="#FFB347"/><stop offset="1" stop-color="#FFE8A8"/></linearGradient>'
   + '<radialGradient id="kgl"><stop offset="0" stop-color="#FFD89A" stop-opacity=".75"/><stop offset="1" stop-color="#FFB347" stop-opacity="0"/></radialGradient>'
   + '<linearGradient id="kbw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9832F"/><stop offset="1" stop-color="#A8400C"/></linearGradient></defs></svg>';
-// the flame is a lotus petal, the same curve family as Prapti's lotus
 const KFLAME = '<g class="glow"><circle cx="40" cy="34" r="30" fill="url(#kgl)"/></g><g class="flame"><g class="fl"><path d="M40 53 C29 45 30 30 40 12 C50 30 51 45 40 53 Z" fill="url(#kfl)"/><path d="M40 51 C35 46 35.5 38 40 29 C44.5 38 45 46 40 51 Z" fill="#FFF6D6"/></g></g>';
 const diyaBowl = () => '<path d="M40 53v5" stroke="#4A2412" stroke-width="2" stroke-linecap="round"/>'
-  + '<path d="M9 57 C3 52 2 46 4 41 C11 45 15 50 16 57 Z" fill="#D8651C" opacity=".85"/><path d="M71 57 C77 52 78 46 76 41 C69 45 65 50 64 57 Z" fill="#D8651C" opacity=".85"/>'
   + '<path d="M12 58 C18 54 62 54 68 58 C65 74 53 82 40 82 C27 82 15 74 12 58 Z" fill="url(#kbw)"/><ellipse cx="40" cy="58" rx="28" ry="4.5" fill="#F6B48A"/><ellipse cx="40" cy="58" rx="21" ry="2.6" fill="#7A2E0A" opacity=".55"/>';
 function diyaScene() {
   const lit = KD.litSet || (KD.litSet = []);
-  const pos = [[18, 64], [50, 80], [82, 64]];
   return '<div class="kscene' + (lit.length >= 3 ? ' all' : '') + '" id="kscene">' + KDEFS + '<span class="kbloom" aria-hidden="true"></span>'
-    + '<div class="ksrc" aria-hidden="true"><span class="kpulse"></span><svg width="80" height="90" viewBox="0 0 80 90" class="kd on">' + KFLAME + '</svg><span class="ksrclotus">' + monoLotus(74) + '</span></div>'
-    + pos.map((p, i) => '<div class="kd' + (lit.includes(i) ? ' on' : '') + '" data-i="' + i + '" style="left:' + p[0] + '%;top:' + p[1] + '%"><span class="kring"></span><svg width="80" height="90" viewBox="0 0 80 90" aria-hidden="true">' + KFLAME + diyaBowl() + '</svg><span class="klab">' + KDLAB[i] + '</span></div>').join('')
-    + '<div class="kcarry" aria-hidden="true"><svg width="80" height="90" viewBox="0 0 80 90" class="kd on">' + KFLAME + '</svg></div></div>';
+    + [0, 1, 2].map(i => '<div class="kd' + (lit.includes(i) ? ' on' : '') + '" data-i="' + i + '"><span class="kring"></span><span class="kup" aria-hidden="true"></span><svg width="80" height="90" viewBox="0 0 80 90" aria-hidden="true">' + KFLAME + diyaBowl() + '</svg><span class="klab">' + KDLAB[i] + '</span></div>').join('') + '</div>';
 }
 function igniteDiya(el) {
   if (!el || el.classList.contains('on')) return;
   const i = +el.dataset.i, lit = KD.litSet || (KD.litSet = []); if (!lit.includes(i)) lit.push(i); KD.lit = lit.length;
   el.classList.add('on', 'just'); hap();
-  for (let k = 0; k < 7; k++) { const s = document.createElement('i'); s.className = 'kspark'; s.style.setProperty('--dx', (Math.random() * 44 - 22).toFixed(0) + 'px'); s.style.setProperty('--dy', (-30 - Math.random() * 40).toFixed(0) + 'px'); s.style.animationDelay = (k * 40) + 'ms'; el.appendChild(s); setTimeout(() => s.remove(), 1400); }
-  if (KD.lit >= 3) {
-    setTimeout(() => { const sc = $('#kscene'); if (sc) sc.classList.add('all'); const l = $('#kline'); if (l) l.classList.remove('hide'); const h = $('#khint'); if (h) h.textContent = 'Three lights, and none of them alone.'; const t = $('.ktap'); if (t) t.style.visibility = 'hidden'; const nb = $('.navbtns .btn'); if (nb) nb.textContent = 'Next'; }, 650);
-  }
+  for (let k = 0; k < 6; k++) { const s = document.createElement('i'); s.className = 'kspark'; s.style.setProperty('--dx', (Math.random() * 36 - 18).toFixed(0) + 'px'); s.style.setProperty('--dy', (-26 - Math.random() * 34).toFixed(0) + 'px'); s.style.animationDelay = (k * 40) + 'ms'; el.appendChild(s); setTimeout(() => s.remove(), 1400); }
+  if (KD.lit >= 3) setTimeout(() => { const sc = $('#kscene'); if (sc) sc.classList.add('all'); const l = $('#kline'); if (l) l.classList.remove('hide'); const t = $('.ktap'); if (t) t.style.visibility = 'hidden'; const nb = $('.navbtns .btn'); if (nb) nb.textContent = 'Next'; }, 600);
 }
 function diyaDrag() {
   const sc = $('#kscene'); if (!sc || sc.dataset.wired) return; sc.dataset.wired = '1';
-  const carry = sc.querySelector('.kcarry'), src = sc.querySelector('.ksrc'); let drag = false;
-  const at = e => { const r = sc.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
-  const wick = el => { const r = el.getBoundingClientRect(), s = sc.getBoundingClientRect(); return [r.left - s.left + r.width / 2, r.top - s.top + 30]; };
-  const move = (x, y) => { carry.style.transform = 'translate(' + (x - 40) + 'px,' + (y - 64) + 'px)'; };
-  sc.addEventListener('pointerdown', e => {
-    const [x, y] = at(e), [sx, sy] = wick(src); if (Math.hypot(x - sx, y - sy - 20) > 70) return;
-    e.preventDefault(); drag = true; try { sc.setPointerCapture(e.pointerId); } catch (x) {} sc.classList.add('carrying'); move(x, y); hap();
-  });
-  sc.addEventListener('pointermove', e => {
-    if (!drag) return; const [x, y] = at(e); move(x, y);
-    // the carried flame's tip sits ~40px above the finger; light a diya when it reaches the wick
-    sc.querySelectorAll('.kd[data-i]:not(.on)').forEach(d => { const [dx, dy] = wick(d); if (Math.hypot(x - dx, (y - 34) - dy) < 40) igniteDiya(d); });
-  });
-  const end = () => { if (!drag) return; drag = false; sc.classList.remove('carrying'); };
+  let d = null, y0 = 0;
+  sc.addEventListener('pointerdown', e => { const el = e.target.closest('.kd:not(.on)'); if (!el) return; e.preventDefault(); d = el; y0 = e.clientY; el.classList.add('press'); try { sc.setPointerCapture(e.pointerId); } catch (x) {} });
+  sc.addEventListener('pointermove', e => { if (!d) return; const up = y0 - e.clientY; d.style.setProperty('--lift', Math.max(0, Math.min(1, up / 40))); if (up > 40) { d.classList.remove('press'); d.style.removeProperty('--lift'); igniteDiya(d); d = null; } });
+  const end = () => { if (d) { d.classList.remove('press'); d.style.removeProperty('--lift'); } d = null; };
   ['pointerup', 'pointercancel'].forEach(ev => sc.addEventListener(ev, end));
 }
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=05b9a63d').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=5611af46').catch(() => {}));</script>
 </body>
 </html>
