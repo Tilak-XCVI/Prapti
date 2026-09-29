@@ -1,5 +1,6 @@
 // Prapti reminders. Supabase runs this every 5 minutes (pg_cron). It reads Chhaya's day and sends
-// the push reminders that are due, once each. It also tells Tilak when she sends a suggestion.
+// the push reminders that are due, once each. It also tells Tilak when she sends a suggestion,
+// sends his surprise notes and dashboard messages, and alerts him to the same quiet flags his dashboard shows.
 // Secrets needed (Edge Functions > Secrets): VAPID_PUBLIC, VAPID_PRIVATE, CRON_KEY.
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -56,6 +57,34 @@ async function sendTo(email: string, payload: any) {
 async function once(key: string) { const { error } = await sb.from("notif_log").insert({ key }); return !error; } // false if already sent
 const doc = async (id: string) => (await sb.from("docs").select("data").eq("id", id).maybeSingle()).data?.data;
 
+const PLEASANT = (q: string) => q === "hp" || q === "lp";
+async function flags(now: { date: string }) {
+  const out: { k: string; key: string; t: string; urgent?: boolean }[] = [];
+  const { data: dRows } = await sb.from("docs").select("id, data").eq("col", "days").gte("id", "days/" + addDays(now.date, -30));
+  const { data: first } = await sb.from("docs").select("id").eq("col", "days").order("id").limit(1);
+  const { data: wRows } = await sb.from("docs").select("id, data").eq("col", "weekly").order("id");
+  const days: Record<string, any> = {}; (dRows || []).forEach((r: any) => (days[r.id.slice(5)] = r.data || {}));
+  const shown = (x: any) => !!x && (x.begun || Object.values(x.done || {}).some(Boolean) || (x.checkins || []).length > 0 || (x.opens || []).length > 0);
+  const chk = (d: string) => { const c = (days[d] || {}).checkins || []; return c[c.length - 1] || null; };
+  const w = (wRows || []).map((r: any) => ({ id: r.id.slice(7), ...(r.data || {}) }));
+  const lw = w[w.length - 1];
+  if (lw && (lw.answers || [])[8] > 0 && lw.id >= addDays(now.date, -7)) out.push({ k: "q9", key: "q9:" + lw.id, urgent: true, t: "Her weekly check-in mentioned thoughts of self-harm. Please talk to her today." });
+  const f0 = first && first[0] ? first[0].id.slice(5) : null;
+  if (f0 && f0 <= addDays(now.date, -3) && ![0, -1, -2].some((k) => shown(days[addDays(now.date, k)]))) {
+    const last = Object.keys(days).filter((d) => shown(days[d])).sort().pop() || "old";
+    out.push({ k: "quiet", key: "quiet:" + last, t: "She hasn't opened Prapti for 3 days. A gentle message might help." });
+  }
+  let run = 0, start = "";
+  for (let k = 0; k < 21; k++) { const d = addDays(now.date, -k), c = chk(d); if (!c) { if (k === 0) continue; break; } if (PLEASANT(c.q)) break; run++; start = d; }
+  if (run >= 3) out.push({ k: "hard", key: "hard:" + start, t: run + " hard days in a row. Time together might help." });
+  if (w.length >= 3) {
+    const [a, b, c] = w.slice(-3);
+    if ([a, b, c].every((x: any) => x.gad != null) && c.gad > b.gad && b.gad > a.gad) out.push({ k: "anx", key: "anx:" + c.id, t: "Her anxiety score has gone up two weeks running." });
+    if (c.score > b.score && b.score > a.score) out.push({ k: "mood", key: "mood:" + c.id, t: "Her mood score has got heavier two weeks running." });
+  }
+  return out;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   const body = await req.json().catch(() => ({}));
@@ -66,6 +95,14 @@ Deno.serve(async (req) => {
     const email = data?.user?.email?.toLowerCase();
     if (!email || ![HER, HIM].includes(email)) return new Response("no", { status: 401, headers: CORS });
     const n = await sendTo(email, { title: "Prapti", body: "Reminders are on. Jay Swaminarayan.", url: "./", tag: "test" });
+    return new Response(JSON.stringify({ sent: n }), { headers: { ...CORS, "content-type": "application/json" } });
+  }
+  // Tilak's dashboard: send Chhaya a notification with his own words
+  if (body.custom) {
+    const jwt = (req.headers.get("authorization") || "").replace(/^Bearer /i, "");
+    const { data } = await sb.auth.getUser(jwt);
+    if (data?.user?.email?.toLowerCase() !== HIM) return new Response("no", { status: 401, headers: CORS });
+    const n = await sendTo(HER, { title: String(body.custom.title || "From Tilak").slice(0, 60), body: String(body.custom.body || "").slice(0, 160), url: "./", tag: "tilak" + Date.now() });
     return new Response(JSON.stringify({ sent: n }), { headers: { ...CORS, "content-type": "application/json" } });
   }
   if (req.headers.get("x-cron-key") !== Deno.env.get("CRON_KEY")) return new Response("no", { status: 401, headers: CORS });
@@ -84,6 +121,20 @@ Deno.serve(async (req) => {
   for (const f of fb || []) {
     if (f.data?.done || !(await once("fb:" + f.id))) continue;
     log.push("fb:" + (await sendTo(HIM, { title: f.data?.type === "bug" ? "Chhaya reported a problem" : "New idea from Chhaya", body: String(f.data?.text || "Open Prapti to read it").slice(0, 140), url: "./", tag: "fb" })));
+  }
+  // surprise notes (now or scheduled) → her
+  const { data: notes } = await sb.from("docs").select("id, data").eq("col", "notes");
+  for (const n of notes || []) {
+    const x = n.data || {}, due = Date.parse(x.showAt || x.at || "");
+    if (!x.push || x.seen || x.deleted || !due || due > Date.now() || Date.now() - due > 864e5) continue;
+    if (!(await once("note:" + n.id))) continue;
+    log.push("note:" + (await sendTo(HER, { title: "A note from Tilak", body: "Open Prapti to read it.", url: "./", tag: "note" })));
+  }
+  // quiet flags → Tilak (the same checks as his dashboard). Self-harm answer: straight away; the rest at 7pm.
+  for (const f of await flags(now)) {
+    if (!f.urgent && (now.mins < 19 * 60 || now.mins >= 19 * 60 + 45)) continue;
+    if (!(await once("flag:" + f.key))) continue;
+    log.push("flag:" + (await sendTo(HIM, { title: f.urgent ? "Please check in with Chhaya" : "Prapti: worth a check-in", body: f.t, url: "./", tag: "flag-" + f.k })));
   }
   return new Response(JSON.stringify({ at: now, sent: log }), { headers: { ...CORS, "content-type": "application/json" } });
 });
