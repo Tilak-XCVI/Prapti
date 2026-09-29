@@ -658,6 +658,51 @@ body:has(.paperpage){background:#FBF6EC}
 .nav .in.six .lotus{width:54px;height:54px}
 .search input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
 .sky .chip.glass{white-space:nowrap}
+.modebtn{flex-shrink:0;white-space:nowrap;border:none;border-radius:20px;padding:9px 16px;font:600 14px var(--sans);color:var(--skyInk);background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+:root[data-theme="dark"] .modebtn{background:rgba(36,26,20,.6)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .modebtn{background:rgba(36,26,20,.6)}}
+/* self-compassion */
+.kbanner{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;border:none;text-align:left;width:100%;border-radius:28px;padding:22px 18px 22px 22px;min-height:150px;color:#FFF4F2;background:radial-gradient(100% 130% at 88% 50%,#8C3450 0%,#5A1F33 55%,#3A1422 100%);transition:transform .2s}
+.kbanner:active{transform:scale(.98)}
+.kbglow{position:absolute;width:240px;height:240px;right:-60px;top:-40px;border-radius:50%;background:radial-gradient(circle,rgba(246,180,138,.35),rgba(246,180,138,0) 68%);animation:drift2 16s ease-in-out infinite alternate}
+.kbheart{position:relative;width:104px;height:104px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.kbheart i{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(251,227,232,.45);animation:kripple 4.8s ease-out infinite}
+.kbheart i:nth-child(2){animation-delay:1.6s}.kbheart i:nth-child(3){animation-delay:3.2s}
+.kbheart svg{animation:kbeat 4.8s ease-in-out infinite;filter:drop-shadow(0 0 14px rgba(251,200,210,.6))}
+@keyframes kripple{0%{transform:scale(.35);opacity:0}25%{opacity:.9}100%{transform:scale(1.05);opacity:0}}
+@keyframes kbeat{0%,100%{transform:scale(.94)}45%{transform:scale(1.06)}}
+.kbody{align-items:center;text-align:center;gap:16px}
+.kh{font-size:clamp(28px,8vw,36px)!important;line-height:1.1}
+.kchips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:360px}
+.kchip{border:1.5px solid rgba(162,59,79,.25);background:rgba(255,255,255,.55);color:var(--ink);border-radius:22px;padding:10px 16px;font:600 15px var(--sans);transition:all .2s}
+.kchip.on{background:#A23B4F;border-color:#A23B4F;color:#fff;transform:scale(1.04)}
+.khold{position:relative;width:220px;height:220px;border:none;background:none;margin-top:8px;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transform:scale(var(--ks,1));transition:transform .15s}
+.khold svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.kr0{fill:none;stroke:rgba(162,59,79,.14);stroke-width:8}
+.kr1{fill:none;stroke:#A23B4F;stroke-width:8;stroke-linecap:round;stroke-dasharray:540}
+.kheart{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#C4556E;transition:transform .3s}
+.khold.holding .kheart{color:#A23B4F;filter:drop-shadow(0 0 22px rgba(196,85,110,.55))}
+.khold.done .kheart{color:#A23B4F}
+.kbreath{position:absolute;left:0;right:0;bottom:-34px;font:600 15px var(--sans);color:var(--ink2)}
+.kdiyas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;max-width:360px;margin-top:10px}
+.kdiya{border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink2);font-size:13px;line-height:1.3;min-height:130px}
+.kdiya .flame{opacity:0;transform-origin:32px 40px;transform:scale(.3);transition:opacity .5s,transform .6s cubic-bezier(.2,.8,.2,1.3)}
+.kdiya .flame.on{opacity:1;transform:scale(1);animation:flick 2.4s ease-in-out infinite alternate .6s}
+@keyframes flick{0%{transform:scale(1) skewX(0)}50%{transform:scale(1.04,.97) skewX(2deg)}100%{transform:scale(.98,1.03) skewX(-2deg)}}
+.kline{font-size:21px;line-height:1.35;max-width:320px}
+.kopt{width:100%;border:1.5px solid rgba(162,59,79,.2);background:rgba(255,255,255,.6);border-radius:18px;padding:14px 16px;font:italic 400 20px/1.3 var(--serif);color:var(--ink);text-align:left;transition:all .2s}
+.kopt.on{background:#A23B4F;color:#fff;border-color:#A23B4F}
+.kown{font-style:normal!important;text-align:left}
+.ksay{padding:26px 22px;border-radius:26px;background:rgba(255,255,255,.6);max-width:360px;box-shadow:0 10px 30px rgba(162,59,79,.12)}
+.ksay p{font-size:clamp(26px,7.4vw,32px);line-height:1.25;color:var(--ink)}
+.ksaybtn{display:flex;align-items:center;gap:10px;border:none;background:#A23B4F;color:#fff;border-radius:28px;padding:14px 22px;font:600 16px var(--sans)}
+.ksaybtn i{width:12px;height:12px;border-radius:6px;border:2px solid rgba(255,255,255,.7)}
+.ksaybtn i.on{background:#fff;border-color:#fff}
+:root[data-theme="dark"] .kchip,:root[data-theme="dark"] .kopt,:root[data-theme="dark"] .ksay{background:rgba(255,255,255,.06);border-color:rgba(242,184,198,.22)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .kchip,:root:not([data-theme="light"]) .kopt,:root:not([data-theme="light"]) .ksay{background:rgba(255,255,255,.06);border-color:rgba(242,184,198,.22)}}
+:root[data-theme="dark"] .kchip.on,:root[data-theme="dark"] .kopt.on{background:#A23B4F;border-color:#A23B4F}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .kchip.on,:root:not([data-theme="light"]) .kopt.on{background:#A23B4F;border-color:#A23B4F}}
+@media (prefers-reduced-motion: reduce){.kbheart i,.kbheart svg,.kbglow,.kdiya .flame.on{animation:none}}
 .into{animation:intoBox .9s cubic-bezier(.5,0,.7,1) both}
 @keyframes intoBox{0%{transform:none;opacity:1}60%{transform:translateY(90px) scale(.5);opacity:.8}100%{transform:translateY(120px) scale(.2);opacity:0}}
 .lid{transform-origin:10% 100%;animation:lid 1.2s ease-in-out both}
@@ -684,13 +729,13 @@ const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.get
 const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return ymd(d); };
 const now = () => new Date();
-const appDay = () => ymd(new Date(Date.now() - 4 * 3600e3));
+const appDay = () => { const d = new Date(); if (d.getHours() < 4) d.setDate(d.getDate() - 1); return ymd(d); }; // local clock, so clock changes don't move the 4am boundary
 let TODAY = appDay();
 const dow = s => parse(s).getDay(); // 0 Sun
 const weekStart = s => addDays(s, -((dow(s) + 6) % 7)); // Monday
 const dayLabel = s => { const d = parse(s); return d.toLocaleDateString('en-GB', { weekday: 'long' }) + ' · ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }); };
 const shortDate = s => parse(s).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-const dayNum = s => Math.floor(parse(s).getTime() / 864e5);
+const dayNum = s => { const [y, m, d] = s.split('-').map(Number); return Math.round(Date.UTC(y, m - 1, d) / 864e5); };
 const RTMS_START = '2026-10-19';
 const uid = () => Math.random().toString(36).slice(2, 9);
 const IMG = id => '../m/' + id + '.jpg';
@@ -793,7 +838,7 @@ async function flush() {
       const chunk = rows.slice(i, i + 40);
       const { error } = await sb.from('docs').upsert(chunk.map(r => ({ id: r.id, col: r.col, data: r.data })));
       if (error) throw error;
-      chunk.forEach(r => { dirty.delete(r._k); B[r._k] = fieldsJ(r.data); });
+      chunk.forEach(r => { if (J(getData(r._k)) === J(r.data)) dirty.delete(r._k); B[r._k] = fieldsJ(r.data); }); // edited during upload: stays queued
     }
     lastErr = ''; failCount = 0;
   } catch (e) {
@@ -829,7 +874,7 @@ function applyRow(row) {
 async function loadAll() {
   let from = 0; const size = 1000;
   for (;;) {
-    const { data, error } = await sb.from('docs').select('id,col,data').in('col', ['app'].concat(COLS, SANDBOX() ? ['sandbox'] : [])).range(from, from + size - 1);
+    const { data, error } = await sb.from('docs').select('id,col,data').in('col', ['app'].concat(COLS, SANDBOX() ? ['sandbox'] : [])).order('id').range(from, from + size - 1);
     if (error) throw error;
     if (!from) { const meta = data.find(r => r.id === 'app/meta'), ep = meta && meta.data && meta.data.epoch; let mine = null; try { mine = localStorage.getItem('prapti-epoch'); } catch (e) {}
       if (ep && String(ep) !== mine) { try { [LS, LSB, LSD, 'prapti-photo-urls', 'prapti-log', 'prapti-lastOpen'].forEach(k => localStorage.removeItem(k)); localStorage.setItem('prapti-epoch', String(ep)); } catch (e) {} freshStart = true; dirty.clear(); location.reload(); throw new Error('fresh start'); } }
@@ -852,7 +897,7 @@ window.addEventListener('pagehide', () => { if (dirty.size) flush(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) { if (dirty.size) flush(); } else { checkNewDay(); if (USER && ready) loadAll().then(remoteChanged).catch(() => {}); flush(); } });
 setInterval(checkNewDay, 30000);
 setInterval(() => { if (dirty.size) flush(); }, 20000);
-function checkNewDay() { const t = appDay(); if (t !== TODAY) { TODAY = t; route = null; if (USER) boot(); } }
+function checkNewDay() { const t = appDay(); if (t !== TODAY) { TODAY = t; route = null; try { CI = null; } catch (e) {} if (USER) boot(); } }
 let pendingRender = false;
 function remoteChanged() {
   cacheLocal();
@@ -909,6 +954,7 @@ async function compressImage(file, max) {
   } finally { URL.revokeObjectURL(url); }
 }
 async function storePhoto(file) {
+  if (viewOnly()) throw new Error('View only: this is her screen');
   const blob = await compressImage(file, 1600), path = 'photos/' + TODAY + '-' + Date.now().toString(36) + uid() + '.jpg';
   for (let a = 0; a < 3; a++) {
     const { error } = await sb.storage.from('media').upload(path, blob, { contentType: 'image/jpeg', upsert: false });
@@ -1129,7 +1175,7 @@ V.today = () => {
     + '</main>';
 };
 V.today_after = () => { justFinished = false; lastTicked = null; };
-function mins(m) { const h = Math.floor(m / 60), mm = m % 60; return (h % 12 || 12) + (mm ? ':' + pad(mm) : '') + (h < 12 ? 'am' : 'pm'); }
+function mins(m) { m = ((Math.round(m) % 1440) + 1440) % 1440; const h = Math.floor(m / 60), mm = m % 60; return (h % 12 || 12) + (mm ? ':' + pad(mm) : '') + (h < 12 ? 'am' : 'pm'); }
 function weeklyNudge() {
   const wk = weekStart(TODAY); const doneThisWeek = Object.keys(S.weekly).some(k => k >= wk);
   if (doneThisWeek || dow(TODAY) !== 0) return '';
@@ -1498,7 +1544,7 @@ function toolBody(k, t, gb) {
     case 'cold': return head('Try it', 'Cold water reset.') + '<p class="sub">Run cold water over your wrists, or splash your face, for 30 seconds. It tells your body to slow down.</p>' + timerBlock(30, 'Start 30 seconds', gb);
     case 'name': return head('Name it', 'Put a little space between you and the thought.') + '<div class="card col" style="gap:6px"><label for="gName" class="serif" style="font-size:22px">My mind is telling me that…</label><input id="gName" class="field it" placeholder="I\'ll never find a job" value="' + esc(GS.name) + '" data-in="gName"></div><p id="gNamed" class="fade" style="font-size:15px;line-height:1.5;color:' + gb + '">' + (GS.name.trim().length > 3 ? 'That\'s the mind talking, not you. You are atma, watching the thought pass.' : '') + '</p>';
     case 'worry': return head('The worry box', 'Park it until worry time. It\'ll wait.') + '<div style="position:relative;height:250px;display:flex;flex-direction:column;align-items:center">'
-      + (GS.boxed ? '' : '<div class="' + (GS.dropping ? 'into' : '') + '" style="position:relative;z-index:2;width:min(250px,80%);padding:14px 16px;border-radius:14px;background:#FFF6D8;box-shadow:0 6px 14px -8px rgba(31,36,51,.4);transform:rotate(-2deg)"><label for="gWorry" class="small">Your worry</label><textarea id="gWorry" rows="3" placeholder="Write the worry here…" data-in="gWorry" style="width:100%;height:76px;border:none;background:transparent;font-family:var(--serif);font-size:19px;line-height:1.3;resize:none">' + esc(GS.worry) + '</textarea></div>')
+      + (GS.boxed ? '' : '<div class="' + (GS.dropping ? 'into' : '') + '" style="position:relative;z-index:2;width:min(250px,80%);padding:14px 16px;border-radius:14px;background:#FFF6D8;box-shadow:0 6px 14px -8px rgba(31,36,51,.4);transform:rotate(-2deg)"><label for="gWorry" class="small">Your worry</label><textarea id="gWorry" rows="3" placeholder="Write the worry here…" data-in="gWorry" style="width:100%;height:76px;border:none;background:transparent;color:#2A1A12;font-family:var(--serif);font-size:19px;line-height:1.3;resize:none">' + esc(GS.worry) + '</textarea></div>')
       + '<div style="position:absolute;bottom:0;width:170px;height:110px"><div class="' + (GS.boxed ? 'lid' : 'lidopen') + '" style="position:absolute;top:0;left:-6px;width:182px;height:22px;border-radius:8px;background:' + gb + '"></div><div style="position:absolute;top:20px;left:0;width:170px;height:90px;border-radius:0 0 14px 14px;background:#7D5CA0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600">' + (GS.boxed ? 'Opens at 5pm' : 'Worry box') + '</div></div></div>'
       + '<button class="btn sm" style="align-self:center;background:' + (GS.boxed ? 'transparent;color:' + gb : gb) + '" data-a="gBox">' + (GS.boxed ? 'Parked until 5pm' : 'Put it in the box') + '</button>';
     case 'mine': return head('Mine to solve?', 'Is this mine to solve today?') + '<div class="tiles">' + ['yes', 'no'].map(v => '<button class="opt" style="text-align:center;' + (GS.ans === v ? 'background:' + gb + ';color:#fff' : '') + '" data-a="gAns" data-v="' + v + '">' + (v === 'yes' ? 'Yes' : 'Not today') + '</button>').join('') + '</div>'
@@ -1735,7 +1781,7 @@ INP.smFiles = async el => {
 };
 A.smRmPhoto = el => { SM.photos.splice(+el.dataset.i, 1); render(true); };
 A.smView = el => sheet('<div class="between"><span class="eyebrow">Photo</span>' + closeBtn('closeSheet') + '</div><img src="' + (photoSrc(el.dataset.id) || '') + '" data-photo="' + esc(el.dataset.id) + '" alt="Smruti photo" style="width:100%;border-radius:18px">') || setTimeout(fillPhotos, 0);
-A.smSave = el => {
+A.smSave = el => { if (!SM) return;
   if (!SM.text.trim() && !SM.photos.length && !SM.title.trim()) return toast('Add a few words or a photo first');
   const x = { id: SM.id, date: SM.date || TODAY, title: SM.title.trim(), text: SM.text.trim(), photos: SM.photos.slice(), saved: new Date().toISOString() };
   S.smruti[x.id] = x; save('smruti/' + x.id); burstEl(el, 18); buzz(); toast('Smruti saved');
@@ -1851,7 +1897,7 @@ function lastSleep() { const ks = Object.keys(S.days).sort().reverse(); for (con
 function n1(x) { return String(+x.toFixed(1)); }
 function fmtH(h) { if (h == null) return '–'; const hh = Math.floor(h), mm = Math.round((h - hh) * 60); return hh + 'h' + (mm ? ' ' + mm + 'm' : ''); }
 function sleepSummary() { const ks = Object.keys(S.days).sort().reverse().slice(0, 7).map(k => sleepHours(S.days[k].sleep)).filter(x => x != null); return ks.length ? 'Last 7 nights: ' + fmtH(ks.reduce((a, b) => a + b, 0) / ks.length) + ' average' : 'Log how you slept each morning'; }
-function sleepPrompt() { if (OWNER) return ''; const dd = day(); if (dd.sleep && dd.sleep.bed) return ''; if (now().getHours() >= 15) return ''; return '<button class="card between fade" style="border:none;text-align:left;background:#2F4468;color:#EEF1F8" data-a="go" data-v="sleeplog"><span class="col" style="gap:4px"><span class="eyebrow" style="color:#C9D4EA">Morning</span><span class="serif" style="font-size:22px">How did you sleep?</span></span>' + I.right.replace('#B3A393', '#C9D4EA') + '</button>'; }
+function sleepPrompt() { if (OWNER && !viewOnly()) return ''; const dd = day(); if (dd.sleep && dd.sleep.bed) return ''; if (now().getHours() >= 15) return ''; return '<button class="card between fade" style="border:none;text-align:left;background:#2F4468;color:#EEF1F8" data-a="go" data-v="sleeplog"><span class="col" style="gap:4px"><span class="eyebrow" style="color:#C9D4EA">Morning</span><span class="serif" style="font-size:22px">How did you sleep?</span></span>' + I.right.replace('#B3A393', '#C9D4EA') + '</button>'; }
 let SL = null;
 V.sleeplog = p => {
   const dd = day(), prev = lastSleep() || {}, target = S.settings.sleep || {};
@@ -1860,10 +1906,10 @@ V.sleeplog = p => {
   const nightN = (dd.sleep && dd.sleep.night || []).length;
   if (nightN && !SL.wakes) SL.wakes = Math.min(3, nightN);
   const tr = (id, label, v) => '<div class="between sleeprow"><label for="' + id + '" style="font-size:16px;font-weight:600">' + label + '</label><input id="' + id + '" class="timein" type="time" value="' + esc(v) + '" data-in="slT" data-k="' + id + '"></div>';
-  return '<main class="wrap nonav sleepwrap" style="gap:18px"><div class="between"><span class="pill">Sleep</span><button class="link" data-a="sleepSkip">Skip for today</button></div>'
+  return '<main class="wrap nonav sleepwrap" style="gap:18px"><div class="between"><span class="pill">Sleep</span><span class="row" style="gap:14px">' + (dd.sleep && dd.sleep.bed ? '' : '<button class="link" data-a="sleepSkip">Skip for today</button>') + (stack.length ? closeBtn('slClose') : '') + '</span></div>'
     + '<div class="col" style="gap:6px"><h1 class="h1" style="font-size:clamp(32px,9vw,40px)">How did you sleep?</h1><p class="sub">Roughly is fine. It takes 20 seconds.</p></div>'
     + '<section class="card col" style="gap:4px;padding:6px 18px">' + tr('bed', 'Fell asleep', SL.bed) + tr('wake', 'Woke up', SL.wake) + tr('up', 'Got out of bed', SL.up) + '</section>'
-    + '<div class="small" style="margin-top:-8px;padding-left:4px">' + (sleepHours(SL) != null ? 'About ' + fmtH(sleepHours(SL)) + ' asleep · ' + fmtH(bedHours(SL)) + ' in bed' : '') + '</div>'
+    + '<div class="small" id="slSum" style="margin-top:-8px;padding-left:4px">' + (sleepHours(SL) != null ? 'About ' + fmtH(sleepHours(SL)) + ' asleep · ' + fmtH(bedHours(SL)) + ' in bed' : '') + '</div>'
     + '<section class="col" style="gap:10px"><span class="h2">Woke in the night</span><div class="seg" style="grid-template-columns:repeat(4,minmax(0,1fr))">' + [0, 1, 2, 3].map(n => '<button class="' + (SL.wakes === n ? 'on' : '') + '" data-a="slWakes" data-n="' + n + '">' + (n === 3 ? '3+' : n) + '</button>').join('') + '</div>'
     + (nightN ? '<span class="small">You logged ' + nightN + ' wake-up' + (nightN > 1 ? 's' : '') + ' in the night.</span>' : '')
     + (SL.wakes ? '<span class="small" style="margin-top:4px">What woke you?</span><div class="chips">' + WOKE_BY.map(w => '<button class="chip' + (SL.why.includes(w) ? ' on' : '') + '" data-a="slWhy" data-w="' + esc(w) + '">' + esc(w) + '</button>').join('') + '</div>' : '') + '</section>'
@@ -1875,28 +1921,37 @@ V.sleeplog = p => {
     + '<div style="flex:1"></div><div class="cta"><button class="btn" data-a="sleepSave">Save</button></div></main>';
 };
 function face(i) { const m = ['M8 16c1.5-1.5 6.5-1.5 8 0', 'M8 16c2-1 6-1 8 0', 'M8 15.5h8', 'M8 14.5c2 1.5 6 1.5 8 0', 'M7.5 14c2 3 7 3 9 0'][i]; return '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><circle cx="9" cy="10" r=".9" fill="currentColor"/><circle cx="15" cy="10" r=".9" fill="currentColor"/><path d="' + m + '"/></svg>'; }
-INP.slT = el => { SL[el.dataset.k] = el.value; const h = $('.sleepwrap .small'); };
+INP.slT = el => { SL[el.dataset.k] = el.value; const h = $('#slSum'); if (h) h.textContent = sleepHours(SL) != null ? 'About ' + fmtH(sleepHours(SL)) + ' asleep · ' + fmtH(bedHours(SL)) + ' in bed' : ''; };
 INP.slNote = el => { SL.note = el.value; };
 A.slWakes = el => { SL.wakes = +el.dataset.n; if (!SL.wakes) SL.why = []; render(true); };
 A.slWhy = el => { const w = el.dataset.w, i = SL.why.indexOf(w); if (i > -1) SL.why.splice(i, 1); else SL.why.push(w); render(true); };
 A.slRested = el => { SL.rested = +el.dataset.n; render(true); };
 A.slFlag = el => { SL[el.dataset.k] = !SL[el.dataset.k]; render(true); };
 function sleepNext() { const p = route.p || {}; SL = null; if (p.after === 'setup' || !S.settings.setupDone) go('setup', { first: true }, { replace: true }); else { stack = []; go('today', null, { replace: true }); } }
-A.sleepSave = el => { const dd = day(); dd.sleep = Object.assign({}, dd.sleep || {}, SL, { logged: new Date().toISOString() }); save('days/' + TODAY); burstEl(el, 14, ['#6F86B8', '#C9D4EA', '#F6B48A']); setTimeout(sleepNext, 300); };
+A.sleepSave = el => { const h = sleepHours(SL); if (h != null && h > 18) return toast('That\'s over 18 hours. Check the times.'); const dd = day(); dd.sleep = Object.assign({}, dd.sleep || {}, SL, { logged: new Date().toISOString() }); save('days/' + TODAY); burstEl(el, 14, ['#6F86B8', '#C9D4EA', '#F6B48A']); setTimeout(sleepNext, 300); };
+A.slClose = () => { SL = null; back('today'); };
 A.sleepSkip = () => { const dd = day(); dd.sleep = Object.assign({}, dd.sleep || {}, { skipped: true }); save('days/' + TODAY); sleepNext(); };
 V.sleep = () => {
   const ks = Array.from({ length: 7 }, (_, i) => addDays(TODAY, i - 6));
   const rows = ks.map(k => ({ k, s: (S.days[k] || {}).sleep }));
-  const W = 320, x = m => { let v = m < 12 * 60 ? m + 1440 : m; return 44 + (v - 20 * 60) / (16 * 60) * (W - 54); };
+  // Timeline runs from noon to noon (so late nights and lie-ins past midday both fit), trimmed to the nights shown.
+  const W = 320, L = 44, noonM = m => (m - 720 + 1440) % 1440;
+  const spans = rows.filter(r => r.s && r.s.bed && r.s.wake).map(r => { const a = noonM(toMins(r.s.bed)); return { r, a, b: a + sleepHours(r.s) * 60, c: a + (bedHours(r.s) || sleepHours(r.s)) * 60 }; });
+  let lo = 8 * 60, hi = 24 * 60; spans.forEach(p => { lo = Math.min(lo, p.a); hi = Math.max(hi, p.c); });
+  lo = Math.max(0, Math.floor(lo / 120) * 120); hi = Math.min(1800, Math.ceil(hi / 120) * 120);
+  const x = v => L + (v - lo) / (hi - lo) * (W - L - 10), step = (hi - lo) > 16 * 60 ? 360 : 240;
+  const lab = v => { const m = (v + 720) % 1440; return m === 0 ? 'Midnight' : m === 720 ? 'Noon' : (m / 60 % 12 || 12) + (m < 720 ? 'am' : 'pm'); };
   let svg = '<svg width="100%" viewBox="0 0 ' + W + ' ' + (rows.length * 30 + 26) + '" role="img" aria-label="Sleep over the last 7 nights">';
-  ['8pm', 'Midnight', '4am', '8am', 'Noon'].forEach((l, i) => { const xx = 44 + i * (W - 54) / 4; svg += '<line x1="' + xx + '" x2="' + xx + '" y1="4" y2="' + (rows.length * 30 + 4) + '" stroke="var(--line)"/><text x="' + xx + '" y="' + (rows.length * 30 + 20) + '" font-size="10" fill="var(--faint)" text-anchor="middle">' + l + '</text>'; });
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) { const xx = x(v); svg += '<line x1="' + xx + '" x2="' + xx + '" y1="4" y2="' + (rows.length * 30 + 4) + '" stroke="var(--line)"/><text x="' + xx + '" y="' + (rows.length * 30 + 20) + '" font-size="10" fill="var(--faint)" text-anchor="middle">' + lab(v) + '</text>'; }
   rows.forEach((r, i) => {
     const y = 8 + i * 30; svg += '<text x="0" y="' + (y + 11) + '" font-size="11" fill="var(--faint)">' + parse(r.k).toLocaleDateString('en-GB', { weekday: 'short' }) + '</text>';
-    const s = r.s; if (!s || !s.bed || !s.wake) return;
-    const a = x(toMins(s.bed)), b = x(toMins(s.wake)), c = x(toMins(s.up || s.wake));
-    svg += '<rect x="' + a + '" y="' + y + '" width="' + Math.max(4, b - a) + '" height="14" rx="7" fill="#5B72A6"/>';
-    if (c > b) svg += '<rect x="' + b + '" y="' + y + '" width="' + (c - b) + '" height="14" rx="7" fill="#C9D4EA"/>';
-    const n = Math.min(s.wakes || 0, 3); for (let j = 0; j < n; j++) svg += '<circle cx="' + (a + (b - a) * (j + 1) / (n + 1)) + '" cy="' + (y + 7) + '" r="3.2" fill="#F6B48A"/>';
+    const p = spans.find(q => q.r === r); if (!p) return;
+    const a = x(p.a), b = x(p.b), c = x(p.c);
+    if (c > b + 1) svg += '<rect x="' + (b - 7) + '" y="' + y + '" width="' + (c - b + 7) + '" height="14" rx="7" fill="#C9D4EA"/>';
+    svg += '<rect x="' + a + '" y="' + y + '" width="' + Math.max(14, b - a) + '" height="14" rx="7" fill="#5B72A6"/>';
+    const night = (r.s.night || []).map(t => { let v = noonM(toMins(t)); if (v < p.a) v += 1440; return v; }).filter(v => v > p.a && v < p.b);
+    const dots = night.length ? night.map(v => x(v)) : Array.from({ length: Math.min(r.s.wakes || 0, 3) }, (_, j) => a + (b - a) * (j + 1) / (Math.min(r.s.wakes || 0, 3) + 1));
+    dots.forEach(cx => { svg += '<circle cx="' + cx + '" cy="' + (y + 7) + '" r="3.4" fill="#F6B48A" stroke="#5B72A6" stroke-width="1"/>'; });
   });
   svg += '</svg>';
   const logged = rows.filter(r => r.s && r.s.bed);
@@ -1914,14 +1969,14 @@ V.sleep = () => {
 /* ===== Awake in the night ===== */
 V.night = () => '<main class="wrap nonav nightwrap" style="justify-content:center;text-align:center;gap:22px;min-height:100vh">'
   + '<span class="serif it" style="font-size:20px;opacity:.7">' + new Date().toTimeString().slice(0, 5) + '</span><h1 class="h1" style="font-size:clamp(32px,9vw,40px)">Awake? Let\'s log it and settle.</h1>'
-  + '<button class="btn" style="background:#2F4468" data-a="nightLog">' + (nightLogged ? 'Logged ✓' : 'Log that I woke up') + '</button>'
+  + '<button class="btn" style="background:#2F4468" data-a="nightLog">' + (nightLogged === TODAY ? 'Logged ✓' : 'Log that I woke up') + '</button>'
   + '<div class="row" style="gap:10px"><button class="btn soft" style="background:#2A211C;color:#E9DCCB" data-a="nightBreathe">Breathe</button><button class="btn soft" style="background:#2A211C;color:#E9DCCB" data-a="nightMantra">Mantra</button></div>'
   + '<button class="link" style="color:#8E7F72" data-a="nightClose">Open the app instead</button></main>';
-let nightLogged = false;
-A.nightLog = () => { if (nightLogged) return; const tgt = now().getHours() < 4 ? addDays(TODAY, 1) : TODAY, dd = day(tgt); dd.sleep = Object.assign({}, dd.sleep || {}); dd.sleep.night = (dd.sleep.night || []).concat([new Date().toTimeString().slice(0, 5)]); save('days/' + tgt); nightLogged = true; render(true); };
+let nightLogged = '';
+A.nightLog = () => { if (nightLogged === TODAY) return; const tgt = now().getHours() < 4 ? addDays(TODAY, 1) : TODAY, dd = day(tgt); dd.sleep = Object.assign({}, dd.sleep || {}); dd.sleep.night = (dd.sleep.night || []).concat([new Date().toTimeString().slice(0, 5)]); save('days/' + tgt); nightLogged = TODAY; render(true); };
 A.nightBreathe = () => { document.documentElement.setAttribute('data-theme', 'dark'); go('calm', { night: true }); };
 A.nightMantra = () => { document.documentElement.setAttribute('data-theme', 'dark'); go('calm', { night: true }); setTimeout(() => A.play(), 300); };
-A.nightClose = () => { nightDismissed = true; applyTheme(); boot(); };
+A.nightClose = () => { nightDismissed = TODAY; applyTheme(); boot(); };
 
 /* ===== Patterns ===== */
 function patternsCard(inSleep) {
@@ -2152,7 +2207,7 @@ V.today = () => {
     + (i.first ? '<span class="firsttag">First thing</span>' : '') + (i.extra ? '<button class="xbtn" style="position:absolute;right:10px" data-a="rmExtra" data-id="' + i.id + '" aria-label="Remove ' + esc(i.t) + '">' + I.close + '</button>' : '')
     + '</div>';
   const pin = dd.pin ? '<div class="card" style="background:var(--tint);display:flex;flex-direction:column;gap:6px"><div class="between"><span class="eyebrow">Carry it today</span><button class="link" data-a="unpin" aria-label="Remove">' + I.close + '</button></div><p class="serif" style="font-size:20px;line-height:1.3">' + esc(dd.pin) + '</p></div>' : '';
-  const sleepCard = (() => { const sl = S.settings.sleep; if (!sl) return ''; const h = now().getHours() * 60 + now().getMinutes(); if (h < sl.wind - 45 || h > sl.wind + 120) return ''; return '<div class="darkcard" style="background:#2F4468;display:flex;gap:14px;align-items:center"><span class="itile sm" style="background:rgba(255,255,255,.14)">' + gicon('sleep') + '</span><span class="col" style="gap:4px"><span class="eyebrow" style="color:#C9D4EA">Wind down · ' + mins(sl.wind) + '</span><span style="font-size:15px;line-height:1.4">Dim the lights, phone away, arti or dhun. Wake at ' + mins(sl.wake) + '.</span></span></div>'; })();
+  const sleepCard = (() => { const sl = S.settings.sleep; if (!sl) return ''; const h = now().getHours() * 60 + now().getMinutes(); const dw = ((h - sl.wind) % 1440 + 1440) % 1440; if (!(dw <= 120 || dw >= 1440 - 45)) return ''; return '<div class="darkcard" style="background:#2F4468;display:flex;gap:14px;align-items:center"><span class="itile sm" style="background:rgba(255,255,255,.14)">' + gicon('sleep') + '</span><span class="col" style="gap:4px"><span class="eyebrow" style="color:#C9D4EA">Wind down · ' + mins(sl.wind) + '</span><span style="font-size:15px;line-height:1.4">Dim the lights, phone away, arti or dhun. Wake at ' + mins(sl.wake) + '.</span></span></div>'; })();
   const cl = all ? celeLine(items.length, mode) : null;
   return '<main class="wrap">'
     + skyHead('<div class="between"><span class="pill">' + parse(TODAY).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '') + '</span>' + darshanChip() + '</div>'
@@ -2554,7 +2609,7 @@ function iconLotus(fan) {
 /* sign-in always opens at the top (iPhone restores the old scroll position after sign-out otherwise) */
 try { history.scrollRestoration = 'manual'; } catch (e) {}
 V.login_after = V.newpw_after = () => { window.scrollTo(0, 0); requestAnimationFrame(() => window.scrollTo(0, 0)); };
-{ const f = A.signOutYes; A.signOutYes = async (el, e) => { window.scrollTo(0, 0); return f(el, e); }; }
+
 
 /* ===== Suggestions and problem reports (her) → inbox (you) ===== */
 let FB = null;
@@ -2771,7 +2826,7 @@ V.me = () => {
     + row('My safety plan', S.safety.people.length ? S.safety.people.length + (S.safety.people.length === 1 ? ' person' : ' people') + ' and your steps' : 'Fill it in on a good day', 'go', 'safety')
     + row('My darshan photos', ownList().length ? ownList().length + ' added' : 'Add your own photos and quotes', 'go', 'mydarshan')
     + row('Saved darshan', S.saved.darshan.length ? S.saved.darshan.length + ' saved' : 'Tap the heart in Darshan', 'go', 'saved')
-    + (!OWNER && notesList().filter(noteLive).length ? row('Notes', notesList().filter(noteLive).length + (notesList().filter(noteLive).length === 1 ? ' note' : ' notes'), 'go', 'notes') : '')
+    + ((!OWNER || viewOnly()) && notesList().filter(noteLive).length ? row('Notes', notesList().filter(noteLive).length + (notesList().filter(noteLive).length === 1 ? ' note' : ' notes'), 'go', 'notes') : '')
     + row('Health report', 'A PDF for your GP or clinic', 'go', 'report')
     + (deletedItems().length ? row('Recently deleted', deletedItems().length + ' you can restore', 'go', 'trash') : '')
     + '</section>'
@@ -2780,7 +2835,7 @@ V.me = () => {
     + '<div class="setrow" style="cursor:default"><span class="col" style="gap:2px"><span style="font-size:16px;font-weight:600">' + (!navigator.onLine ? 'Offline · saving on this phone' : dirty.size ? 'Saving…' : 'Saved to the cloud ✓') + '</span><span class="small">' + (!navigator.onLine ? 'Everything will upload when you\'re back online.' : dirty.size ? dirty.size + ' change' + (dirty.size === 1 ? '' : 's') + ' waiting to upload' + (lastErr ? ' (' + esc(lastErr) + ')' : '') : 'Everything you add is saved as you go.') + '</span></span></div>'
     + row('Save a backup file', 'Everything you\'ve written, as a file', 'backupDl')
     + row('What\'s new', 'Version ' + APP_VERSION + (S.settings.seenVer !== CHANGELOG[0].v ? ' · new' : ''), 'go', 'whatsnew')
-    + (OWNER ? '' : row('Suggest an idea or report a problem', 'Goes straight to Tilak', 'fbNew'))
+    + (OWNER && !viewOnly() ? '' : row('Send feedback', 'An idea, or something not working', 'fbNew'))
     + row('Something not working?', 'Copy a report if something breaks', 'diag')
     + row('Sign out', USER ? esc(USER.email) : '', 'signOut')
     + '</section>'
@@ -2814,7 +2869,7 @@ A.backupDl = async () => {
 function deletedItems() { const out = []; ['journal', 'smruti', 'mydarshan'].forEach(c => Object.values(S[c] || {}).forEach(x => { if (x && x.deleted) out.push({ c, x }); })); return out.sort((a, b) => (b.x.deletedAt || '') < (a.x.deletedAt || '') ? -1 : 1); }
 V.trash = () => '<main class="wrap nonav"><div class="between"><span class="pill">Recently deleted</span>' + closeBtn() + '</div><h1 class="h1">Recently deleted</h1><p class="sub">Nothing is ever lost. Tap Restore to bring something back.</p>'
   + (deletedItems().length ? deletedItems().map(({ c, x }) => '<div class="card col" style="gap:8px"><span class="eyebrow">' + ({ journal: 'Journal', smruti: 'Smruti', mydarshan: 'My darshan' })[c] + ' · ' + shortDate(x.date || (x.added || '').slice(0, 10) || TODAY) + '</span><span class="clamp3" style="font-size:15px">' + esc(x.text || x.title || x.quote || 'Photo') + '</span><button class="link" style="align-self:flex-start" data-a="restore" data-k="' + c + '/' + x.id + '">Restore</button></div>').join('') : '<p class="sub">Nothing here.</p>') + '</main>';
-A.restore = el => { const x = getData(el.dataset.k); if (!x) return; delete x.deleted; delete x.deletedAt; x.restored = new Date().toISOString(); save(el.dataset.k); toast('Restored'); render(true); };
+A.restore = el => { const x = getData(el.dataset.k); if (!x) return; x.deleted = false; x.deletedAt = ''; x.restored = new Date().toISOString(); save(el.dataset.k); toast('Restored'); render(true); };
 
 A.diag = () => { let L = []; try { L = JSON.parse(localStorage.getItem('prapti-log') || '[]'); } catch (e) {}
   const rep = 'Prapti v' + APP_VER + ' · user: ' + (USER ? USER.email : '-') + ' · online: ' + navigator.onLine + ' · ready: ' + ready + ' · unsaved: ' + dirty.size + ' · standalone: ' + (window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches) + '\n' + navigator.userAgent + '\n\n' + (L.slice(-15).map(e => e.at.slice(5, 16) + ' ' + e.kind + ' ' + e.detail).join('\n') || 'No errors recorded.');
@@ -2847,12 +2902,12 @@ function boot() {
   stack = []; applyTheme();
   const h = now().getHours();
   if (viewOnly()) { route = null; go('today', null, { replace: true }); return; }
-  if (((h === 1 && now().getMinutes() >= 30) || (h >= 2 && h < 5)) && !nightDismissed) { route = null; go('night', null, { replace: true }); }
+  if (((h === 1 && now().getMinutes() >= 30) || (h >= 2 && h < 5)) && nightDismissed !== TODAY) { route = null; go('night', null, { replace: true }); }
   else if (!day().begun) { route = null; go('darshan', null, { replace: true }); }
   else if (!S.settings.setupDone) go('setup', { first: true }, { replace: true });
   else go('today', null, { replace: true });
 }
-let nightDismissed = false;
+let nightDismissed = '';
 async function start() {
   applyTheme();
   let session = null;
@@ -2867,7 +2922,7 @@ function signedIn(u) {
   boot(); startSync();
 }
 A.signOut = () => sheet('<span class="h2">Sign out?</span><p class="sub">Your entries stay safe in the cloud. You\'ll need your password to sign back in.</p><div class="row"><button class="btn" data-a="signOutYes">Sign out</button><button class="btn soft" data-a="closeSheet">Stay</button></div>');
-A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(); try { localStorage.removeItem(LS); localStorage.removeItem(LSB); localStorage.removeItem(LSD); } catch (e) {} location.reload(); };
+A.signOutYes = async () => { window.scrollTo(0, 0); closeSheet(); await flush(); await sb.auth.signOut(); try { localStorage.removeItem(LS); localStorage.removeItem(LSB); localStorage.removeItem(LSD); } catch (e) {} location.reload(); };
 start();
 
 /* ===== Prapti v3: Me analytics, day story, insights, weekly round-up, lifts, self-compassion ===== */
@@ -2889,7 +2944,7 @@ function countUp(el, to, dur) { if (!el) return; if (reduced() || !isFinite(to))
 const LIFTS = ['Family', 'Darshan', 'Kirtan or mantra', 'Being outside', 'Rest', 'Talking to someone', 'Seva', 'Something I achieved'];
 let LIFT = null;
 function liftCard() {
-  const dd = day(); if (OWNER || now().getHours() < 17 || dd.lift || dd.liftSkip) return '';
+  const dd = day(); if ((OWNER && !viewOnly()) || now().getHours() < 17 || dd.lift || dd.liftSkip) return '';
   if (!LIFT) LIFT = [];
   const opts = [...new Set(doneNames(TODAY).slice(0, 4).concat(LIFTS))];
   return '<section class="card col" style="gap:12px"><div class="between" style="align-items:baseline"><span class="serif" style="font-size:clamp(21px,6vw,24px)">What lifted you today?</span><button class="link" style="font-size:13px;color:var(--faint)" data-a="liftSkip">Skip</button></div>'
@@ -3287,7 +3342,7 @@ function weeksCard() {
 
 /* ===================== What's new ===================== */
 function whatsNewCard() {
-  const v = CHANGELOG[0].v; if (!S.settings.setupDone || S.settings.seenVer === v || viewOnly()) return '';
+  const v = CHANGELOG[0].v; if (!S.settings.setupDone || S.settings.seenVer === v) return '';
   return '<button class="card newcard fade" data-a="go" data-v="whatsnew"><span class="col" style="gap:4px;flex:1;text-align:left"><span class="eyebrow">New in Prapti ' + v + '</span><span class="serif" style="font-size:22px;line-height:1.15">' + esc(CHANGELOG[0].items[0].split(':')[0]) + ', and more</span><span class="small">Tap to see what\'s changed</span></span>' + I.right + '</button>';
 }
 V.whatsnew = () => {
@@ -3297,12 +3352,13 @@ V.whatsnew = () => {
 };
 function noteCard() {
   const nc = whatsNewCard();
-  if (OWNER) return nc;
+  if (OWNER && !viewOnly()) return nc;
   const n = notesList().find(x => !x.seen && noteLive(x));
   return (n ? '<div class="card notecard fade"><span class="eyebrow">A note for you</span><p class="serif" style="font-size:22px;line-height:1.35;white-space:pre-wrap">' + esc(n.text) + '</p><button class="heartbtn" data-a="noteSeen" data-id="' + n.id + '" aria-label="Seen, with love">' + I.heart(true) + '</button></div>' : '') + nc;
 }
 
 /* ===================== Surprise notes, now with timing ===================== */
+const localWhen = (iso, dateOnly) => { const d = new Date(iso); if (isNaN(d)) return ''; return shortDate(ymd(d)) + (dateOnly ? '' : ', ' + mins(d.getHours() * 60 + d.getMinutes())); };
 const noteLive = n => !n.showAt || new Date(n.showAt) <= new Date();
 let NT = null;
 A.noteNew = () => { NT = { when: 'now', at: '', push: true, text: '' }; noteSheet(); };
@@ -3313,7 +3369,7 @@ function noteSheet() {
     + (NT.when === 'later' ? '<input id="noteAt" type="datetime-local" class="field" value="' + esc(NT.at) + '" data-in="noteAt">' : '')
     + '<div class="setrow ic" style="cursor:default;padding:4px 0"><span class="col" style="gap:2px;flex:1"><span style="font-size:15px;font-weight:600">Let her know</span><span class="small">A notification: "A note from Tilak"</span></span><button class="tg' + (NT.push ? '' : ' off') + '" role="switch" aria-checked="' + NT.push + '" aria-label="Let her know" data-a="ntPush"></button></div>'
     + '<button class="btn" data-a="noteSend">' + (NT.when === 'later' ? 'Schedule the note' : 'Leave the note') + '</button>'
-    + (sent.length ? '<div class="col" style="gap:6px;margin-top:6px"><span class="eyebrow">Sent</span>' + sent.slice(0, 8).map(n => '<div class="between divrow" style="padding:8px 0;gap:10px"><span class="clamp3" style="font-size:14px">' + esc(n.text) + '</span><span class="small" style="flex-shrink:0;text-align:right">' + (n.seen ? 'Seen ♥' + (n.seenAt ? '<br>' + shortDate(n.seenAt.slice(0, 10)) : '') : !noteLive(n) ? 'Scheduled<br>' + shortDate(n.showAt.slice(0, 10)) + ' ' + mins(toMins(n.showAt.slice(11, 16))) : 'Not yet') + '</span></div>').join('') + '</div>' : ''));
+    + (sent.length ? '<div class="col" style="gap:6px;margin-top:6px"><span class="eyebrow">Sent</span>' + sent.slice(0, 8).map(n => '<div class="between divrow" style="padding:8px 0;gap:10px"><span class="clamp3" style="font-size:14px">' + esc(n.text) + '</span><span class="small" style="flex-shrink:0;text-align:right">' + (n.seen ? 'Seen ♥' + (n.seenAt ? '<br>' + localWhen(n.seenAt) : '') : !noteLive(n) ? 'Scheduled<br>' + localWhen(n.showAt) : 'Not yet') + '</span></div>').join('') + '</div>' : ''));
 }
 INP.noteT = el => { NT.text = el.value; };
 INP.noteAt = el => { NT.at = el.value; };
@@ -3326,7 +3382,7 @@ A.noteSend = () => {
   S.notes[id] = { id, from: 'Tilak', to: 'Chhaya', text: v, at: new Date().toISOString(), showAt, push: NT.push, seen: false }; save('notes/' + id);
   NT = null; closeSheet(); toast(showAt ? 'Scheduled' : 'Note left for her'); if (route.v === 'admin') render(true);
 };
-V.notes = () => '<main class="wrap nonav"><div class="between"><span class="pill">Notes</span>' + closeBtn() + '</div><h1 class="h1">Notes</h1>' + notesList().filter(n => OWNER || noteLive(n)).map(n => '<div class="card col" style="gap:8px"><span class="eyebrow">' + shortDate(((n.showAt || n.at) || '').slice(0, 10) || TODAY) + '</span><p class="serif" style="font-size:20px;line-height:1.35;white-space:pre-wrap">' + esc(n.text) + '</p></div>').join('') + '</main>';
+V.notes = () => '<main class="wrap nonav"><div class="between"><span class="pill">Notes</span>' + closeBtn() + '</div><h1 class="h1">Notes</h1>' + notesList().filter(n => OWNER || noteLive(n)).map(n => '<div class="card col" style="gap:8px"><span class="eyebrow">' + (n.showAt || n.at ? localWhen(n.showAt || n.at, true) : shortDate(TODAY)) + '</span><p class="serif" style="font-size:20px;line-height:1.35;white-space:pre-wrap">' + esc(n.text) + '</p></div>').join('') + '</main>';
 
 /* ===================== Suggestions: status she can see ===================== */
 const FBST = { new: ['Sent', 'New'], planned: ['Tilak\'s on it', 'Planned'], done: ['Done', 'Done'] };
@@ -3334,13 +3390,13 @@ const fbStatus = x => x.status || (x.done ? 'done' : 'new');
 function fbOpen() { return fbList().filter(x => fbStatus(x) === 'new').length; }
 function fbSheet() {
   const mine = fbList().slice(0, 5);
-  sheet('<div class="between"><span class="h2">Tell Tilak</span>' + closeBtn('closeSheet') + '</div>'
+  sheet('<div class="between"><span class="h2">Send feedback</span>' + closeBtn('closeSheet') + '</div>'
     + '<div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr))">' + [['idea', 'An idea'], ['bug', 'Something\'s wrong']].map(x => '<button class="' + (FB.type === x[0] ? 'on' : '') + '" data-a="fbType" data-t="' + x[0] + '">' + x[1] + '</button>').join('') + '</div>'
     + '<textarea id="fbText" class="ruled" style="height:136px" placeholder="' + (FB.type === 'bug' ? 'What happened, and where in the app?' : 'What would make Prapti better for you?') + '" data-in="fbText">' + esc(FB.text) + '</textarea>'
     + (FB.photo ? '<div class="row" style="gap:10px"><img src="' + (photoSrc(FB.photo) || '') + '" alt="" style="width:56px;height:56px;border-radius:12px;object-fit:cover"><span class="small" style="flex:1">Screenshot added</span><button class="link" data-a="fbNoPhoto">Remove</button></div>'
       : '<label class="chip" for="fbShot" style="align-self:flex-start;cursor:pointer">+ Add a screenshot</label><input id="fbShot" type="file" accept="image/*" hidden data-in="fbShot">')
     + '<button class="btn" data-a="fbSend">Send</button>'
-    + (mine.length && !OWNER ? '<div class="col" style="gap:4px;margin-top:6px"><span class="eyebrow">What you\'ve sent</span>' + mine.map(x => '<div class="between divrow" style="padding:8px 0;gap:10px"><span class="clamp3" style="font-size:14px">' + esc(x.text || 'Screenshot') + '</span><span class="fbst ' + fbStatus(x) + '">' + FBST[fbStatus(x)][0] + '</span></div>').join('') + '</div>' : ''));
+    + (mine.length && (!OWNER || viewOnly()) ? '<div class="col" style="gap:4px;margin-top:6px"><span class="eyebrow">What you\'ve sent</span>' + mine.map(x => '<div class="between divrow" style="padding:8px 0;gap:10px"><span class="clamp3" style="font-size:14px">' + esc(x.text || 'Screenshot') + '</span><span class="fbst ' + fbStatus(x) + '">' + FBST[fbStatus(x)][0] + '</span></div>').join('') + '</div>' : ''));
   setTimeout(() => { const t = $('#fbText'); if (t && !mine.length) t.focus(); }, 60);
 }
 V.feedback = () => {
@@ -3361,10 +3417,11 @@ let RP = { per: '4w' };
 const PERIODS = [['4w', '4 weeks'], ['3m', '3 months'], ['all', 'Everything']];
 // Chhaya's real data, for Tilak's dashboard and report, loaded straight from the database whichever mode he's in
 let ADM = null;
+async function pageAll(build) { const out = []; for (let from = 0; ; from += 1000) { const r = await build().range(from, from + 999); if (r.error) return r; out.push(...(r.data || [])); if ((r.data || []).length < 1000) return { data: out, error: null }; } }
 async function loadHer() {
   const since = 'logs/' + (Date.now() - 7 * 864e5).toString(36);
   const [d, w, st, rt, lg] = await Promise.all([
-    sb.from('docs').select('id,data').eq('col', 'days'),
+    pageAll(() => sb.from('docs').select('id,data').eq('col', 'days').order('id')),
     sb.from('docs').select('id,data').eq('col', 'weekly'),
     sb.from('docs').select('data').eq('id', 'app/settings').maybeSingle(),
     sb.from('docs').select('data').eq('id', 'app/rtms').maybeSingle(),
@@ -3541,7 +3598,7 @@ V.admin = () => {
   const tile = (b, s) => '<div class="stat"><b>' + b + '</b><span class="small">' + s + '</span></div>';
   const act = (a, t, s, v) => '<button class="qa" data-a="' + a + '"' + (v ? ' data-v="' + v + '"' : '') + '><span style="font-size:15px;font-weight:600">' + t + '</span><span class="small">' + s + '</span></button>';
   const fb = fbList(), notes = notesList();
-  let h = '<main class="wrap">' + skyHead('<div class="between" style="align-items:flex-end"><div class="col" style="gap:8px"><h1 class="hello">Dashboard</h1><p class="skysub">' + (viewOnly() ? 'Viewing Chhaya\'s app, read only.' : 'You\'re in your test space.') + '</p></div><button class="chip glass" data-a="ownerMode" style="flex-shrink:0">' + (viewOnly() ? 'Back to mine' : 'View hers') + '</button></div>');
+  let h = '<main class="wrap">' + skyHead('<div class="between" style="align-items:flex-end"><div class="col" style="gap:8px"><h1 class="hello">Dashboard</h1><p class="skysub">' + (viewOnly() ? 'Viewing Chhaya\'s app, read only.' : 'You\'re in your test space.') + '</p></div><button class="modebtn" data-a="ownerMode">' + (viewOnly() ? 'Back to mine' : 'View her app') + '</button></div>');
   if (!glance) h += '<p class="sub">Loading Chhaya\'s data…</p>';
   else {
     const g = glance;
@@ -3582,10 +3639,105 @@ A.pushSend = async () => {
 };
 function navHTML(on) {
   const b = (k, l, a) => '<button class="' + (on === k ? 'on' : '') + '" data-a="' + a + '"' + (on === k ? ' aria-current="page"' : '') + '>' + I[k] + l + '</button>';
-  return '<div class="in' + (OWNER ? ' six' : '') + '">' + b('today', 'Today', 'goToday') + b('darshan', 'Darshan', 'goFeed') + '<button class="lotus" data-a="goCalm" aria-label="Calm space">' + iconLotus(false) + '</button>' + b('grow', 'Grow', 'goGrow') + b('me', 'Me', 'goMe') + (OWNER ? b('admin', 'Admin', 'goAdmin') : '') + '</div>';
+  const adm = OWNER && !viewOnly();
+  return '<div class="in' + (adm ? ' six' : '') + '">' + b('today', 'Today', 'goToday') + b('darshan', 'Darshan', 'goFeed') + '<button class="lotus" data-a="goCalm" aria-label="Calm space">' + iconLotus(false) + '</button>' + b('grow', 'Grow', 'goGrow') + b('me', 'Me', 'goMe') + (adm ? b('admin', 'Admin', 'goAdmin') : '') + '</div>';
 }
 
+/* view-only guards: Tilak can look at her screen exactly as she sees it, but his taps never send or mark things as her */
+{ const f = A.fbSend; A.fbSend = (el, e) => { if (viewOnly()) { closeSheet(); return toast('View only: this is her screen'); } return f(el, e); }; }
+{ const f = A.noteSeen; A.noteSeen = (el, e) => { if (viewOnly()) return toast('View only: she hasn\'t seen it yet'); return f(el, e); }; }
+
+/* ===================== Be kind to yourself (self-compassion break, interactive) ===================== */
+const KFEEL = [['failing', 'Like I\'m failing'], ['hard', 'Hard on myself'], ['behind', 'Behind everyone else'], ['mistake', 'I made a mistake'], ['burden', 'Like a burden'], ['other', 'Something else']];
+const KWORD = ['Hurt', 'Stress', 'Sadness', 'Fear', 'Shame', 'Tiredness', 'Loneliness', 'Worry'];
+const KPHRASE = {
+  failing: ['I\'m doing my best with what I have today.', 'Struggling is not the same as failing.', 'I can start again, as many times as I need.'],
+  hard: ['I wouldn\'t speak to a friend this way. I deserve the same kindness.', 'I\'m allowed to be a work in progress.', 'I can be gentle with myself right now.'],
+  behind: ['My path is my own, and it is unfolding.', 'I am enough as I am today.', 'Maharaj\'s timing, not the world\'s.'],
+  mistake: ['Everyone makes mistakes. I can learn and let go.', 'One mistake doesn\'t define me.', 'I can put it right, gently.'],
+  burden: ['I am loved, not tolerated.', 'The people who love me want to help.', 'Letting others care for me is a gift to them too.'],
+  other: ['May I be kind to myself.', 'May I give myself what I need.', 'This will pass. I\'ll be gentle with myself until it does.'],
+};
+const KDIYA = ['For you, right now', 'For everyone who feels this today', 'For the people who love you'];
+let KD = null;
+const HEARTP = 'M12 20.5s-7.5-4.6-7.5-10.4A4.3 4.3 0 0 1 12 7.4a4.3 4.3 0 0 1 7.5 2.7c0 5.8-7.5 10.4-7.5 10.4z';
+const diyaSVG = on => '<svg width="64" height="74" viewBox="0 0 64 74" aria-hidden="true"><g class="flame' + (on ? ' on' : '') + '"><ellipse cx="32" cy="30" rx="12" ry="16" fill="rgba(255,190,110,.35)"/><path d="M32 12c5 8 8 12 8 17a8 8 0 0 1-16 0c0-5 3-9 8-17z" fill="#FFB347"/><path d="M32 22c2.5 4 4 6 4 8.5a4 4 0 0 1-8 0c0-2.5 1.5-4.5 4-8.5z" fill="#FFF1C9"/></g><path d="M8 46h48c-2 12-12 19-24 19S10 58 8 46z" fill="#C4550F"/><path d="M8 46h48" stroke="#8E3A0A" stroke-width="2" stroke-linecap="round"/><path d="M20 55c8 3 16 3 24 0" stroke="#F6B48A" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".7"/></svg>';
+V.kind = p => {
+  if (!KD) KD = { feel: '', word: '', lit: 0, phrase: '', own: '', said: 0, held: 0 };
+  const s = (p && p.s) || 0, N = 6;
+  const dots = '<div class="dots">' + Array.from({ length: N }, (_, i) => '<span class="' + (i === s ? 'on' : i < s ? 'past' : '') + '"></span>').join('') + '</div>';
+  let body = '', next = 'Next', ok = true;
+  if (s === 0) {
+    body = '<span class="eyebrow">Be kind to yourself</span><h1 class="h1 kh">What\'s weighing on you?</h1><p class="sub">Pick what\'s closest. It shapes the kind words at the end.</p><div class="kchips">' + KFEEL.map(f => '<button class="kchip' + (KD.feel === f[0] ? ' on' : '') + '" data-a="kFeel" data-k="' + f[0] + '">' + f[1] + '</button>').join('') + '</div>';
+    next = KD.feel ? 'Next' : 'Skip this'; }
+  else if (s === 1) {
+    body = '<span class="eyebrow">Soothing touch</span><h1 class="h1 kh">Place a hand on your heart.</h1><p class="sub">Now press and hold the heart below for three slow breaths. Feel the warmth of your hand.</p>'
+      + '<button class="khold' + (KD.held >= 1 ? ' done' : '') + '" id="khold" aria-label="Press and hold for three breaths"><svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="86" class="kr0"/><circle cx="100" cy="100" r="86" class="kr1" id="kring" style="stroke-dashoffset:' + (540 * (1 - KD.held)) + '"/></svg><span class="kheart"><svg width="84" height="84" viewBox="0 0 24 24"><path d="' + HEARTP + '" fill="currentColor"/></svg></span><span class="kbreath" id="kbreath">' + (KD.held >= 1 ? 'Well done' : 'Press and hold') + '</span></button>';
+    next = KD.held >= 1 ? 'Next' : 'Skip'; }
+  else if (s === 2) {
+    body = '<span class="eyebrow">Notice it</span><h1 class="h1 kh">' + (KD.word ? 'This is a moment of ' + KD.word.toLowerCase() + '.' : 'Name what you feel.') + '</h1><p class="sub">' + (KD.word ? 'It\'s real, and it\'s allowed. Like every feeling, it will pass.' : 'Naming a feeling softens it. Tap the closest word.') + '</p><div class="kchips">' + KWORD.map(w => '<button class="kchip' + (KD.word === w ? ' on' : '') + '" data-a="kWord" data-w="' + w + '">' + w + '</button>').join('') + '</div>';
+    next = KD.word ? 'Next' : 'Skip'; }
+  else if (s === 3) {
+    body = '<span class="eyebrow">You\'re not alone</span><h1 class="h1 kh">Light a diya.</h1><p class="sub">Tap each one. Maharaj &amp; Swami are with you in this moment.</p><div class="kdiyas">' + KDIYA.map((t, i) => '<button class="kdiya' + (i < KD.lit ? ' on' : '') + '" data-a="kLight" data-i="' + i + '" aria-label="Light a diya">' + diyaSVG(i < KD.lit) + '<span>' + (i < KD.lit ? t : '&nbsp;') + '</span></button>').join('') + '</div>'
+      + (KD.lit >= 3 ? '<p class="serif it kline fade">Right now, many people feel exactly as you do. You are held.</p>' : '');
+    next = KD.lit >= 3 ? 'Next' : 'Skip'; }
+  else if (s === 4) {
+    const L = KPHRASE[KD.feel || 'other'];
+    body = '<span class="eyebrow">Kind words</span><h1 class="h1 kh">What would you say to a friend feeling this?</h1><p class="sub">Choose words for yourself, or write your own.</p><div class="col" style="gap:10px;width:100%">' + L.map(x => '<button class="kopt' + (KD.phrase === x ? ' on' : '') + '" data-a="kPhrase" data-t="' + esc(x) + '">' + esc(x) + '</button>').join('')
+      + '<textarea id="kOwn" class="ruled kown" style="height:74px" placeholder="Or in your own words…" data-in="kOwn">' + esc(KD.own) + '</textarea></div>';
+    ok = !!(KD.phrase || KD.own.trim()); next = 'Next'; }
+  else {
+    const ph = KD.own.trim() || KD.phrase;
+    body = '<span class="eyebrow">Say it slowly</span><div class="ksay"><p class="serif it">“' + esc(ph) + '”</p></div><p class="sub">Say it to yourself three times, softly. Tap after each one.</p>'
+      + '<button class="ksaybtn" data-a="kSaid" aria-label="Said it">' + [0, 1, 2].map(i => '<i class="' + (i < KD.said ? 'on' : '') + '"></i>').join('') + '<span>' + (KD.said >= 3 ? 'Beautiful' : KD.said ? (3 - KD.said) + ' more' : 'I said it') + '</span></button>'
+      + (KD.said >= 3 && KD.feel === 'burden' ? '<p class="small" style="max-width:320px">If feeling like a burden is strong or keeps coming back, please tell someone you trust today. You matter to them.</p>' : '');
+    next = 'Done'; }
+  return '<div class="kindpage"><main class="stage" style="--ctabg:transparent"><div class="between">' + dots + closeBtn('kindClose') + '</div>'
+    + '<div class="grow1 fade kbody">' + body + '</div>'
+    + '<div class="navbtns">' + (s ? '<button class="back" data-a="kindStep" data-d="-1" aria-label="Back">' + I.back + '</button>' : '') + '<button class="btn" style="background:#A23B4F' + (ok ? '' : ';opacity:.45') + '" data-a="kindStep" data-d="1">' + next + '</button></div></main></div>';
+};
+V.kind_after = p => {
+  const b = $('#khold'); if (!b || KD.held >= 1) return;
+  let raf = 0, t0 = 0, base = KD.held; const DUR = 15000;
+  const tick = t => { if (!t0) t0 = t; KD.held = Math.min(1, base + (t - t0) / DUR); const r = $('#kring'); if (r) r.style.strokeDashoffset = 540 * (1 - KD.held);
+    const ph = ((t - t0 + base * DUR) % 5000) / 5000, w = $('#kbreath'); if (w) w.textContent = ph < 0.45 ? 'Breathe in…' : '…and out';
+    b.style.setProperty('--ks', 1 + 0.08 * Math.sin(Math.PI * Math.min(1, ph / 0.45)) * (ph < 0.45 ? 1 : 0) + (ph >= 0.45 ? 0.08 * (1 - (ph - 0.45) / 0.55) : 0));
+    if (KD.held >= 1) { hap(); render(true); return; } raf = requestAnimationFrame(tick); };
+  const start = e => { e.preventDefault(); base = KD.held; t0 = 0; b.classList.add('holding'); hap(); raf = requestAnimationFrame(tick); };
+  const stop = () => { cancelAnimationFrame(raf); b.classList.remove('holding'); const w = $('#kbreath'); if (w && KD.held < 1) w.textContent = KD.held > 0 ? 'Hold to continue' : 'Press and hold'; };
+  b.addEventListener('pointerdown', start); ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, stop)); b.addEventListener('contextmenu', e => e.preventDefault());
+};
+A.kind = () => { KD = null; go('kind', { s: 0 }); };
+A.kFeel = el => { KD.feel = KD.feel === el.dataset.k ? '' : el.dataset.k; KD.phrase = ''; render(true); };
+A.kWord = el => { KD.word = KD.word === el.dataset.w ? '' : el.dataset.w; hap(); render(true); };
+A.kLight = () => { if (KD.lit < 3) { KD.lit++; hap(); render(true); } };
+A.kPhrase = el => { KD.phrase = el.dataset.t; KD.own = ''; render(true); };
+INP.kOwn = el => { KD.own = el.value; if (KD.own.trim()) { KD.phrase = ''; document.querySelectorAll('.kopt.on').forEach(x => x.classList.remove('on')); } const btn = $('.navbtns .btn'); if (btn) btn.style.opacity = KD.own.trim() ? '' : '.45'; };
+A.kSaid = el => { if (KD.said < 3) { KD.said++; hap(); if (KD.said === 3) burstEl(el, 14, ['#A23B4F', '#F2B8C6', '#F6B48A']); render(true); } };
+A.kindStep = el => {
+  const s = route.p.s + +el.dataset.d;
+  if (+el.dataset.d > 0 && route.p.s === 4 && !(KD.phrase || KD.own.trim())) return toast('Choose some words, or write your own');
+  if (s >= 6) {
+    const ph = KD.own.trim() || KD.phrase, dd = day();
+    if (!viewOnly()) { dd.calm = (dd.calm || []).concat(['kind']); dd.kind = (dd.kind || []).concat([{ feel: KD.feel, word: KD.word, phrase: ph, at: new Date().toTimeString().slice(0, 5) }]); save('days/' + TODAY);
+      S.settings.kindWords = [ph].concat((S.settings.kindWords || []).filter(x => x !== ph)).slice(0, 12); save('settings'); }
+    hap(); KD = null; toast('Kept in your words'); return back('calm');
+  }
+  go('kind', { s: Math.max(0, s) }, { replace: true }); window.scrollTo(0, 0);
+};
+A.kindClose = () => { KD = null; back('calm'); };
+function kindCard() {
+  const last = (S.settings.kindWords || [])[0];
+  return '<button class="kbanner" data-a="kind"><span class="kbglow" aria-hidden="true"></span><span class="col" style="gap:6px;position:relative;z-index:1;flex:1;min-width:0"><span class="eyebrow" style="color:#F6C9D3">Self-compassion · 2 min</span><span class="serif" style="font-size:clamp(26px,7.6vw,30px);line-height:1.05">Be kind to yourself</span><span style="font-size:14px;color:#EBC9CF;line-height:1.4">' + (last ? 'Last time: “' + esc(last.length > 60 ? last.slice(0, 58) + '…' : last) + '”' : 'For the moments you\'re hard on yourself') + '</span></span>'
+    + '<span class="kbheart" aria-hidden="true"><i></i><i></i><i></i><svg width="46" height="46" viewBox="0 0 24 24"><path d="' + HEARTP + '" fill="#FBE3E8"/></svg></span></button>';
+}
+
+/* weekly check-in: a quick double tap must never skip a question (especially the last PHQ-9 item) */
+{ const f = A.wkAns; A.wkAns = (el, e) => { if (!WK || WK.busy === WK.s) return; const s0 = WK.s; WK.busy = s0; f(el, e); setTimeout(() => { if (WK && WK.busy === s0) WK.busy = null; }, 320); }; }
+/* the check-in page always starts fresh unless it was opened by choosing a feeling */
+{ const f = A.go; A.go = (el, e) => { if (el.dataset.v === 'checkin') CI = null; return f(el, e); }; }
+
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=576e5301').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=375b85b7').catch(() => {}));</script>
 </body>
 </html>
