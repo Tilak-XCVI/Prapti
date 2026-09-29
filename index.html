@@ -528,6 +528,13 @@ body:has(.paperpage){background:#FBF6EC}
 .feed .heart.on{background:var(--sa)!important}
 .feed .it::before{content:'';position:absolute;left:0;right:0;top:0;height:140px;z-index:2;background:linear-gradient(rgba(20,12,8,.45),rgba(20,12,8,0));pointer-events:none}
 .glassbtn{background:rgba(20,12,8,.38);box-shadow:0 2px 10px rgba(0,0,0,.25)}
+/* journal paper in night mode: dark paper cards, not light ones */
+:root[data-theme="dark"] .paperpage{--card:#2A2019}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .paperpage{--card:#2A2019}}
+:root[data-theme="dark"] .acc{background:var(--card2)}:root[data-theme="dark"] .acc.open{background:var(--card)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .acc{background:var(--card2)}:root:not([data-theme="light"]) .acc.open{background:var(--card)}}
+:root[data-theme="dark"] .guidepage .eyebrow,:root[data-theme="dark"] .guidepage .by,:root[data-theme="dark"] .guidepage .small[style*="color"]{color:var(--peachT)!important}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .guidepage .eyebrow,:root:not([data-theme="light"]) .guidepage .by,:root:not([data-theme="light"]) .guidepage .small[style*="color"]{color:var(--peachT)!important}}
 .into{animation:intoBox .9s cubic-bezier(.5,0,.7,1) both}
 @keyframes intoBox{0%{transform:none;opacity:1}60%{transform:translateY(90px) scale(.5);opacity:.8}100%{transform:translateY(120px) scale(.2);opacity:0}}
 .lid{transform-origin:10% 100%;animation:lid 1.2s ease-in-out both}
