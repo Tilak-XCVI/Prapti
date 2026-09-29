@@ -2508,6 +2508,50 @@ function pushCard() {
 // keep the phone's registration fresh whenever the app opens (iOS can rotate it)
 setTimeout(() => { try { if (USER && pushOK() && Notification.permission === 'granted') saveSub().catch(e => logErr('push-refresh', e.message || e)); } catch (e) {} }, 6000);
 
+/* ===== Activity: when she opens the app (her phone only), and a 14-day view for Tilak ===== */
+function logOpen() {
+  if (!USER || OWNER || !ready) return;
+  const dd = day(), t = new Date().toTimeString().slice(0, 5), L = dd.opens || (dd.opens = []), last = L[L.length - 1];
+  if (last && toMins(t) - toMins(last) < 5 && toMins(t) >= toMins(last)) return;
+  L.push(t); save('days/' + TODAY);
+}
+setTimeout(function tryLog() { if (ready) logOpen(); else setTimeout(tryLog, 2000); }, 3000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(logOpen, 2500); });
+
+let ACT = null;
+async function loadActivity() {
+  const from = addDays(TODAY, -13);
+  const [d, j] = await Promise.all([
+    sb.from('docs').select('id,data').eq('col', 'days').gte('id', 'days/' + from).lte('id', 'days/' + TODAY),
+    sb.from('docs').select('data').eq('col', 'journal'),
+  ]);
+  const days = {}; (d.data || []).forEach(r => days[r.id.slice(5)] = r.data || {});
+  const jn = {}; (j.data || []).forEach(r => { const x = r.data || {}; if (!x.deleted && !x.auto && x.date) jn[x.date] = (jn[x.date] || 0) + 1; });
+  ACT = { days, jn, at: Date.now() };
+  if (route && route.v === 'activity') render(true);
+}
+V.activity = () => {
+  if (!ACT || Date.now() - ACT.at > 60000) loadActivity().catch(e => toast('Couldn\'t load activity'));
+  const rows = Array.from({ length: 14 }, (_, i) => addDays(TODAY, -i)).map(d => {
+    const x = (ACT && ACT.days[d]) || {}, opens = x.opens || [], done = Object.values(x.done || {}).filter(Boolean).length, ci = (x.checkins || [])[0];
+    const bits = [];
+    if (x.begun) bits.push('Started the day');
+    if (ci) bits.push('Checked in' + (ci.q === 'hp' || ci.q === 'lp' ? ' · ' + esc(ci.w) : ''));
+    if (done) bits.push(done + (done === 1 ? ' task' : ' tasks') + ' done');
+    if (x.sleep && x.sleep.bed) bits.push('Sleep logged');
+    if (x.mala && (x.mala.done || x.mala.n)) bits.push((x.mala.done ? x.mala.done + (x.mala.done === 1 ? ' mala' : ' malas') : x.mala.n + ' beads'));
+    if (ACT && ACT.jn[d]) bits.push(ACT.jn[d] + (ACT.jn[d] === 1 ? ' journal entry' : ' journal entries'));
+    if (x.prapti) bits.push('Prapti line');
+    const used = opens.length || bits.length;
+    return '<div class="setrow" style="align-items:flex-start;cursor:default"><span class="col" style="gap:4px;flex:1"><span style="font-size:16px;font-weight:600">' + (d === TODAY ? 'Today' : d === addDays(TODAY, -1) ? 'Yesterday' : shortDate(d)) + '</span>'
+      + '<span class="small">' + (opens.length ? 'Opened ' + opens.map(t => mins(toMins(t))).join(', ') : used ? 'Opened (time not recorded)' : 'Not opened') + '</span>'
+      + (bits.length ? '<span class="small" style="color:var(--ink2)">' + bits.join(' · ') + '</span>' : '') + '</span>'
+      + '<span style="width:10px;height:10px;border-radius:5px;margin-top:6px;flex-shrink:0;background:' + (used ? 'var(--sa)' : 'var(--rule)') + '"></span></div>';
+  }).join('');
+  return '<main class="wrap nonav"><div class="between"><span class="pill">Activity</span>' + closeBtn() + '</div><div class="col" style="gap:6px"><h1 class="h1">Chhaya\'s activity</h1><p class="sub">The last 14 days. Opening times are recorded from today onwards.</p></div>'
+    + (ACT ? '<section class="card" style="padding:4px 18px">' + rows + '</section>' : '<p class="sub">Loading…</p>') + '</main>';
+};
+
 /* ===== Weekly check-in (PHQ-9) ===== */
 const PHQ = ['Little interest or pleasure in doing things', 'Feeling down, depressed, or hopeless', 'Trouble falling or staying asleep, or sleeping too much', 'Feeling tired or having little energy', 'Poor appetite or overeating', 'Feeling bad about yourself, or that you are a failure or have let yourself or your family down', 'Trouble concentrating on things, such as reading the newspaper or watching television', 'Moving or speaking so slowly that other people could have noticed; or the opposite, being so fidgety or restless that you have been moving around a lot more than usual', 'Thoughts that you would be better off dead or of hurting yourself in some way'];
 const PHQA = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
@@ -2591,6 +2635,7 @@ V.me = () => {
     + row('Appearance', ({ auto: 'Automatic', light: 'Light', dark: 'Dark' })[S.settings.theme || 'auto'], 'themePick')
     + '<div class="setrow" style="cursor:default"><span class="col" style="gap:2px"><span style="font-size:16px;font-weight:600">' + (!navigator.onLine ? 'Offline · saving on this phone' : dirty.size ? 'Saving…' : 'Saved to the cloud ✓') + '</span><span class="small">' + (!navigator.onLine ? 'Everything will upload when you\'re back online.' : dirty.size ? dirty.size + ' change' + (dirty.size === 1 ? '' : 's') + ' waiting to upload' + (lastErr ? ' (' + esc(lastErr) + ')' : '') : 'Everything you add is saved as you go.') + '</span></span></div>'
     + row('Save a backup file', 'Everything you\'ve written, as a file', 'backupDl')
+    + (OWNER ? row('Chhaya\'s activity', 'When she opened Prapti and what she did', 'go', 'activity') : '')
     + (OWNER ? row('Suggestions from Chhaya', fbOpen() ? fbOpen() + ' new' : 'Ideas and problems she sends', 'go', 'feedback') : row('Suggest an idea or report a problem', 'Goes straight to Tilak', 'fbNew'))
     + row('Something not working?', 'Copy a report if something breaks', 'diag')
     + row('Sign out', USER ? esc(USER.email) : '', 'signOut')
@@ -2682,6 +2727,6 @@ A.signOutYes = async () => { closeSheet(); await flush(); await sb.auth.signOut(
 start();
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=4f517f41').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=be9b8f70').catch(() => {}));</script>
 </body>
 </html>
