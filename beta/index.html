@@ -703,6 +703,11 @@ body:has(.paperpage){background:#FBF6EC}
 :root[data-theme="dark"] .kchip.on,:root[data-theme="dark"] .kopt.on{background:#A23B4F;border-color:#A23B4F}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .kchip.on,:root:not([data-theme="light"]) .kopt.on{background:#A23B4F;border-color:#A23B4F}}
 @media (prefers-reduced-motion: reduce){.kbheart i,.kbheart svg,.kbglow,.kdiya .flame.on{animation:none}}
+.admcard{display:flex;align-items:center;gap:14px;width:100%;border:none;text-align:left;border-radius:22px;padding:14px 16px;background:var(--dark);color:#F7F1E8}
+.admcard .small{color:#CDBBA8}
+.admic{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.admbadge{min-width:24px;height:24px;border-radius:12px;background:var(--sa);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 7px}
+.admcard:active{transform:scale(.98)}
 .into{animation:intoBox .9s cubic-bezier(.5,0,.7,1) both}
 @keyframes intoBox{0%{transform:none;opacity:1}60%{transform:translateY(90px) scale(.5);opacity:.8}100%{transform:translateY(120px) scale(.2);opacity:0}}
 .lid{transform-origin:10% 100%;animation:lid 1.2s ease-in-out both}
@@ -1011,7 +1016,7 @@ function render(keepScroll) {
   app.innerHTML = html;
   app.classList.remove('pagein');
   if (!still) { void app.offsetWidth; app.classList.add('pagein'); }
-  const withNav = ['today', 'grow', 'me', 'admin'].includes(route.v);
+  const withNav = ['today', 'grow', 'me'].includes(route.v);
   $('#nav').hidden = !withNav;
   if (withNav) $('#nav').innerHTML = navHTML(route.v);
   if (keepScroll) window.scrollTo(0, y);
@@ -2807,6 +2812,7 @@ V.me = () => {
   const row = (t, s, a, v) => '<button class="setrow" data-a="' + a + '"' + (v ? ' data-v="' + v + '"' : '') + '><span class="col" style="gap:2px"><span style="font-size:16px;font-weight:600">' + t + '</span><span class="small">' + s + '</span></span>' + I.right + '</button>';
   return '<main class="wrap">'
     + skyHead('<div class="between" style="align-items:center"><div class="col" style="gap:8px"><h1 class="hello">Me</h1><p class="skysub">What you\'ve done, not what you\'ve missed.</p></div>' + avatarHTML() + '</div>')
+    + adminEntry()
     + '<section class="card col" style="gap:14px"><div class="between"><span class="serif" style="font-size:22px">This week</span><span class="small">' + (n ? n + (n === 1 ? ' day' : ' days') + ' you showed up' : 'A fresh week') + '</span></div><div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">' + strip + '</div><span class="small">The lotus marks sabha.</span></section>'
     + weeksCard()
     + '<button class="darkcard col" data-a="go" data-v="weekly" style="border:none;text-align:left;gap:12px"><div class="between" style="width:100%"><span class="serif" style="font-size:22px">Weekly check-in</span><span style="font-size:13px;color:var(--peachT)">' + (wks.length && wks[wks.length - 1] >= ws ? 'Done this week' : 'Due Sunday') + '</span></div>'
@@ -3431,7 +3437,7 @@ async function loadHer() {
   const days = {}; (d.data || []).forEach(r => days[r.id.slice(5)] = Object.assign(DAYDEF(r.id.slice(5)), r.data || {}));
   const weekly = {}; (w.data || []).forEach(r => weekly[r.id.slice(7)] = r.data || {});
   ADM = { days, weekly, settings: Object.assign(DEF().settings, (st.data && st.data.data) || {}), rtms: Object.assign(DEF().rtms, (rt.data && rt.data.data) || {}), logs: (lg.data || []).map(r => r.data).filter(x => x && (x.user || '').toLowerCase() !== OWNER_EMAIL).sort((a, b) => (b.at || '') < (a.at || '') ? -1 : 1), at: Date.now() };
-  if (route && ['admin', 'report'].includes(route.v)) render(true);
+  if (route && ['admin', 'report', 'me'].includes(route.v)) render(true);
 }
 function withHer(fn) {
   if (!ADM) return null;
@@ -3598,7 +3604,7 @@ V.admin = () => {
   const tile = (b, s) => '<div class="stat"><b>' + b + '</b><span class="small">' + s + '</span></div>';
   const act = (a, t, s, v) => '<button class="qa" data-a="' + a + '"' + (v ? ' data-v="' + v + '"' : '') + '><span style="font-size:15px;font-weight:600">' + t + '</span><span class="small">' + s + '</span></button>';
   const fb = fbList(), notes = notesList();
-  let h = '<main class="wrap">' + skyHead('<div class="between" style="align-items:flex-end"><div class="col" style="gap:8px"><h1 class="hello">Dashboard</h1><p class="skysub">' + (viewOnly() ? 'Viewing Chhaya\'s app, read only.' : 'You\'re in your test space.') + '</p></div><button class="modebtn" data-a="ownerMode">' + (viewOnly() ? 'Back to mine' : 'View her app') + '</button></div>');
+  let h = '<main class="wrap nonav">' + skyHead('<div class="between" style="margin-bottom:14px"><span class="pill">Only you see this</span>' + closeBtn() + '</div><div class="between" style="align-items:flex-end"><div class="col" style="gap:8px"><h1 class="hello">Dashboard</h1><p class="skysub">' + (viewOnly() ? 'Viewing Chhaya\'s app, read only.' : 'You\'re in your test space.') + '</p></div><button class="modebtn" data-a="ownerMode">' + (viewOnly() ? 'Back to mine' : 'View her app') + '</button></div>');
   if (!glance) h += '<p class="sub">Loading Chhaya\'s data…</p>';
   else {
     const g = glance;
@@ -3628,7 +3634,13 @@ V.admin = () => {
     + '<span class="small">Everything she enters is saved permanently in the database, one record per day.</span></section>';
   return h + '</main>';
 };
-A.goAdmin = () => { stack = []; go('admin', null, { replace: true }); };
+A.goAdmin = () => go('admin');
+function adminEntry() {
+  if (!OWNER || viewOnly()) return '';
+  if (!ADM) loadHer().catch(() => {});
+  const n = ADM ? withHer(() => computeFlags()).length : 0;
+  return '<button class="admcard" data-a="goAdmin"><span class="admic">' + I.admin + '</span><span class="col" style="gap:2px;flex:1;min-width:0"><span style="font-size:16px;font-weight:700">Your dashboard</span><span class="small">' + (n ? n + (n === 1 ? ' thing' : ' things') + ' worth a gentle check-in' : 'Chhaya at a glance, notes, suggestions, releases') + '</span></span>' + (n ? '<span class="admbadge">' + n + '</span>' : '') + I.right + '</button>';
+}
 A.admRefresh = () => { ADM = null; VER = null; render(true); };
 A.pushSheet = () => sheet('<div class="between"><span class="h2">Send a notification</span>' + closeBtn('closeSheet') + '</div><p class="sub">Arrives on her phone straight away, from "Prapti".</p><input id="pushT" class="field" maxlength="60" placeholder="Title, e.g. Thinking of you" value="From Tilak"><textarea id="pushB" class="ruled" style="height:110px;font-style:normal" maxlength="160" placeholder="Short message…"></textarea><button class="btn" data-a="pushSend">Send</button>');
 A.pushSend = async () => {
@@ -3639,8 +3651,7 @@ A.pushSend = async () => {
 };
 function navHTML(on) {
   const b = (k, l, a) => '<button class="' + (on === k ? 'on' : '') + '" data-a="' + a + '"' + (on === k ? ' aria-current="page"' : '') + '>' + I[k] + l + '</button>';
-  const adm = OWNER && !viewOnly();
-  return '<div class="in' + (adm ? ' six' : '') + '">' + b('today', 'Today', 'goToday') + b('darshan', 'Darshan', 'goFeed') + '<button class="lotus" data-a="goCalm" aria-label="Calm space">' + iconLotus(false) + '</button>' + b('grow', 'Grow', 'goGrow') + b('me', 'Me', 'goMe') + (adm ? b('admin', 'Admin', 'goAdmin') : '') + '</div>';
+  return '<div class="in">' + b('today', 'Today', 'goToday') + b('darshan', 'Darshan', 'goFeed') + '<button class="lotus" data-a="goCalm" aria-label="Calm space">' + iconLotus(false) + '</button>' + b('grow', 'Grow', 'goGrow') + b('me', 'Me', 'goMe') + '</div>';
 }
 
 /* view-only guards: Tilak can look at her screen exactly as she sees it, but his taps never send or mark things as her */
@@ -3738,6 +3749,6 @@ function kindCard() {
 { const f = A.go; A.go = (el, e) => { if (el.dataset.v === 'checkin') CI = null; return f(el, e); }; }
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=375b85b7').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=b5127462').catch(() => {}));</script>
 </body>
 </html>
