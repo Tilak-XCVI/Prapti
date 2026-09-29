@@ -40,7 +40,7 @@ export function plan(now: { date: string; mins: number; dow: number }, settings:
   const rt = rtms?.schedule?.[WD[now.dow]];
   if (on("rtms") && !hide.rtms && rt && now.date >= (rtms?.start || "2026-10-19") && !d.noRtms) out.push({ kind: "rtms", at: Math.max(0, toMins(rt) - 60), title: "rTMS today", body: "Session at " + clock(toMins(rt)) + ". Leave with time to spare." });
   if (on("sabha") && now.dow === 6 && settings?.sabhaTime) out.push({ kind: "sabha", at: Math.max(0, toMins(settings.sabhaTime) - 120), title: "Sabha today", body: "Sabha at " + clock(toMins(settings.sabhaTime)) + ". Jay Swaminarayan." });
-  if (on("weekly") && now.dow === 0 && !weeklyDone) out.push({ kind: "weekly", at: 18 * 60, title: "Weekly check-in", body: "Nine quick questions, about two minutes." });
+  if (on("weekly") && now.dow === 0 && !weeklyDone) out.push({ kind: "weekly", at: 18 * 60, title: "Weekly check-in", body: "Two minutes, then your week in Prapti is ready." });
   return out;
 }
 
