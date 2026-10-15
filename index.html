@@ -3527,7 +3527,7 @@ A.reportPdf = async el => {
   lastPdf = file; deliverPdf(file);
 };
 async function deliverPdf(file) {
-  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Prapti health report' }); return; } }
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: file.name.replace(/\.[a-z]+$/, '') }); return; } }
   catch (e) { if (e && e.name === 'AbortError') return; sheet('<div class="between"><span class="h2">Your PDF is ready</span>' + closeBtn('closeSheet') + '</div><button class="btn" data-a="pdfAgain">Share the PDF</button>'); return; }
   const u = URL.createObjectURL(file), a = document.createElement('a'); a.href = u; a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 60000); toast('PDF saved');
 }
@@ -3661,6 +3661,11 @@ V.admin = () => {
   h += '<section class="card col" style="gap:10px"><div class="between"><span class="serif" style="font-size:22px">Releases</span><button class="link" data-a="go" data-v="whatsnew">Her update log</button></div><div class="grid2">'
     + tile(vl ? 'v' + esc(vl.version) : '–', 'live for Chhaya' + (vl && vl.at ? ' · ' + shortDate(vl.at.slice(0, 10)) : '')) + tile(vt ? 'v' + esc(vt.version) : '–', 'test version' + (vt && vt.at ? ' · ' + shortDate(vt.at.slice(0, 10)) : '')) + '</div>'
     + '<span class="small">' + (vl && vt && vl.build === vt.build ? 'Both match: nothing waiting.' : 'Test on your Prapti Beta, then tell Claude "release".') + '</span></section>';
+  const bk = BK && BK.latest;
+  if (!BK) loadBackups();
+  h += '<section class="card col" style="gap:10px"><div class="between"><span class="serif" style="font-size:22px">Backups</span><span class="small">' + (bk ? 'Last night: ' + shortDate(bk.date) : BK && BK.ready === false ? 'Not set up yet' : 'Checking…') + '</span></div>'
+    + '<span class="small">A full copy of everything she enters is saved every night. Tap to keep a copy in Google Drive: choose Drive, then Prapti App, then 1. Daily backups.</span>'
+    + '<div class="qagrid">' + (bk ? '<button class="qa" data-a="bkLatest"><span style="font-size:15px;font-weight:600">Save last night\'s</span><span class="small">' + shortDate(bk.date) + '</span></button>' : '') + '<button class="qa" data-a="bkNow"><span style="font-size:15px;font-weight:600">Back up now</span><span class="small">Everything, as of this minute</span></button></div></section>';
   const logs = ADM ? ADM.logs : [];
   h += '<section class="card col" style="gap:8px"><div class="between"><span class="serif" style="font-size:22px">App health</span><span class="small">' + (logs.length ? logs.length + (logs.length === 1 ? ' error' : ' errors') + ' this week' : 'No errors this week') + '</span></div>'
     + logs.slice(0, 4).map(e => '<div class="col divrow" style="gap:2px;padding:8px 0"><span class="small">' + esc((e.at || '').slice(0, 16).replace('T', ' ')) + ' · ' + esc(e.kind) + ' · ' + esc(e.route || '') + '</span><span style="font-size:13px;word-break:break-word">' + esc(String(e.detail || '').slice(0, 160)) + '</span></div>').join('')
@@ -3813,7 +3818,38 @@ function diyaDrag() {
   ['pointerup', 'pointercancel'].forEach(ev => sc.addEventListener(ev, end));
 }
 
+/* ---------- Backups: nightly copies in the private 'backups' bucket, and a one-tap copy to Drive ---------- */
+let BK = null;
+async function loadBackups() {
+  BK = { ready: null };
+  try {
+    const months = [TODAY.slice(0, 7), addDays(TODAY.slice(0, 7) + '-01', -1).slice(0, 7)];
+    for (const m of months) {
+      const { data, error } = await sb.storage.from('backups').list(m.replace('-', '/'), { limit: 100, sortBy: { column: 'name', order: 'desc' } });
+      if (error) { BK.ready = false; break; }
+      const f = (data || []).filter(x => /\.json$/.test(x.name)).sort((a, b) => b.name.localeCompare(a.name))[0];
+      if (f) { BK = { ready: true, latest: { path: m.replace('-', '/') + '/' + f.name, date: f.name.match(/(\d{4}-\d{2}-\d{2})/)[1] } }; break; }
+      BK.ready = false;
+    }
+  } catch (e) { BK = { ready: false }; }
+  if (route && route.v === 'admin') render(true);
+}
+A.bkLatest = async () => {
+  if (!BK || !BK.latest) return; toast('Fetching backup…');
+  try { const { data, error } = await sb.storage.from('backups').download(BK.latest.path); if (error) throw error; lastPdf = new File([data], 'prapti-backup-' + BK.latest.date + '.json', { type: 'application/json' }); deliverPdf(lastPdf); }
+  catch (e) { toast('Couldn\'t fetch the backup'); }
+};
+A.bkNow = async () => {
+  toast('Collecting everything…');
+  try {
+    const r = await pageAll(() => sb.from('docs').select('id,col,data').order('id')); if (r.error) throw r.error;
+    const docs = (r.data || []).filter(d => d.col !== 'sandbox' && d.col !== 'logs');
+    const body = JSON.stringify({ app: 'Prapti', backup: TODAY, made: new Date().toISOString(), count: docs.length, docs });
+    lastPdf = new File([body], 'prapti-backup-' + TODAY + '.json', { type: 'application/json' }); deliverPdf(lastPdf);
+  } catch (e) { logErr('backup', e.message || e); toast('Couldn\'t make the backup'); }
+};
+
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=fefe6713').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=c0540317').catch(() => {}));</script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 // Prapti reminders. Supabase runs this every 5 minutes (pg_cron). It reads Chhaya's day and sends
 // the push reminders that are due, once each. It also tells Tilak when she sends a suggestion,
-// sends his surprise notes and dashboard messages, and alerts him to the same quiet flags his dashboard shows.
+// sends his surprise notes and dashboard messages, alerts him to the same quiet flags his dashboard shows,
+// and saves a full nightly backup to the private 'backups' storage bucket.
 // Secrets needed (Edge Functions > Secrets): VAPID_PUBLIC, VAPID_PRIVATE, CRON_KEY.
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -135,6 +136,20 @@ Deno.serve(async (req) => {
     if (!f.urgent && (now.mins < 19 * 60 || now.mins >= 19 * 60 + 45)) continue;
     if (!(await once("flag:" + f.key))) continue;
     log.push("flag:" + (await sendTo(HIM, { title: f.urgent ? "Please check in with Chhaya" : "Prapti: worth a check-in", body: f.t, url: "./", tag: "flag-" + f.k })));
+  }
+  // nightly backup: once a day after 3am, a full copy of every record goes to the private 'backups' storage bucket
+  if (now.mins >= 180 && (await once("backup:" + now.date))) {
+    try {
+      const rows: any[] = [];
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await sb.from("docs").select("id, col, data").order("id").range(from, from + 999);
+        if (error) throw error; rows.push(...(data || [])); if ((data || []).length < 1000) break;
+      }
+      const body = JSON.stringify({ app: "Prapti", backup: now.date, made: new Date().toISOString(), count: rows.length, docs: rows });
+      const path = now.date.slice(0, 4) + "/" + now.date.slice(5, 7) + "/prapti-backup-" + now.date + ".json";
+      const { error } = await sb.storage.from("backups").upload(path, new Blob([body], { type: "application/json" }), { upsert: true, contentType: "application/json" });
+      if (error) throw error; log.push("backup:" + rows.length);
+    } catch (e: any) { log.push("backup:failed " + (e?.message || e)); await sb.from("notif_log").delete().eq("key", "backup:" + now.date); }
   }
   return new Response(JSON.stringify({ at: now, sent: log }), { headers: { ...CORS, "content-type": "application/json" } });
 });
