@@ -1313,7 +1313,7 @@ A.ciW = el => { CI.w = el.dataset.w; render(true); };
 A.ciT = el => { const t = el.dataset.t, i = CI.tags.indexOf(t); if (i > -1) CI.tags.splice(i, 1); else CI.tags.push(t); render(true); };
 A.ciOwn = () => { const v = $('#ciOwn').value.trim(); if (!v) return; CI.extraTags.push(v); CI.tags.push(v); render(true); };
 INP.ciNote = el => { CI.note = el.value; };
-A.ciSave = () => { if (!CI.w) return; day().checkins = [{ at: new Date().toTimeString().slice(0, 5), q: CI.q, w: CI.w, tags: CI.tags, note: CI.note }]; save('days/' + TODAY); CI.step = 2; render(); setTimeout(() => { const o = $('.orb'); if (o) { const r = o.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, 18, [QUADS[CI.q].bg, '#F6B48A', '#FFFFFF']); } }, 350); };
+A.ciSave = () => { if (!CI.w) return; day().checkins = (day().checkins || []).concat([{ at: new Date().toTimeString().slice(0, 5), q: CI.q, w: CI.w, tags: CI.tags, note: CI.note }]); save('days/' + TODAY); CI.step = 2; render(); setTimeout(() => { const o = $('.orb'); if (o) { const r = o.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, 18, [QUADS[CI.q].bg, '#F6B48A', '#FFFFFF']); } }, 350); };
 A.ciClose = () => { CI = null; stack = []; go('today', null, { replace: true }); };
 A.ciCalm = () => { CI = null; go('calm', null, { replace: true }); };
 A.ciSafety = () => { CI = null; go('safety', null, { replace: true }); };
@@ -2229,7 +2229,7 @@ function duoTiles(dd) {
   const tile = (a, v, ic, title, sub, due) => '<button class="duo' + (due ? ' due' : '') + '" data-a="' + a + '" data-v="' + v + '"><span class="duoic">' + ic + (due ? '<i class="duedot"></i>' : '') + '</span><span class="col" style="gap:2px;min-width:0"><span class="serif" style="font-size:20px;line-height:1.1">' + title + '</span><span class="small">' + sub + '</span></span></button>';
   const face = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1.8 1.6 5.2 1.6 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>';
   return '<div class="duorow">'
-    + tile('go', 'checkin', face, ciDue ? (reopen ? 'How\'s the afternoon?' : 'How are you?') : (last.q === 'hp' || last.q === 'lp' ? esc(last.w) : 'Checked in'), ciDue ? 'Check in' : 'Tap to change', ciDue)
+    + tile('go', 'checkin', face, ciDue ? (reopen ? 'How\'s the afternoon?' : 'How are you?') : (last.q === 'hp' || last.q === 'lp' ? esc(last.w) : 'Checked in'), ciDue ? 'Check in' : (cs.length > 1 ? cs.length + ' today · ' : '') + 'Check in again', ciDue)
     + tile('go', slDue ? 'sleeplog' : 'sleep', '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + G_ICON.sleep + '</svg>', slLogged ? fmtH(sleepHours(sl)) : 'Sleep', slLogged ? 'last night' : slDue ? 'How did you sleep?' : 'Your nights', slDue)
     + '</div>';
 }
@@ -2767,10 +2767,10 @@ async function loadActivity() {
 V.activity = () => {
   if (!ACT || Date.now() - ACT.at > 60000) loadActivity().catch(e => toast('Couldn\'t load activity'));
   const rows = Array.from({ length: 14 }, (_, i) => addDays(TODAY, -i)).map(d => {
-    const x = (ACT && ACT.days[d]) || {}, opens = x.opens || [], done = Object.values(x.done || {}).filter(Boolean).length, ci = (x.checkins || [])[0];
+    const x = (ACT && ACT.days[d]) || {}, opens = x.opens || [], done = Object.values(x.done || {}).filter(Boolean).length, cis = x.checkins || [], ci = cis[cis.length - 1];
     const bits = [];
     if (x.begun) bits.push('Started the day');
-    if (ci) bits.push('Checked in' + (ci.q === 'hp' || ci.q === 'lp' ? ' · ' + esc(ci.w) : ''));
+    if (ci) bits.push('Checked in' + (cis.length > 1 ? ' ' + cis.length + ' times' : '') + (ci.q === 'hp' || ci.q === 'lp' ? ' · latest ' + esc(ci.w) : ''));
     if (done) bits.push(done + (done === 1 ? ' task' : ' tasks') + ' done');
     if (x.sleep && x.sleep.bed) bits.push('Sleep logged');
     if (x.mala && (x.mala.done || x.mala.n)) bits.push((x.mala.done ? x.mala.done + (x.mala.done === 1 ? ' mala' : ' malas') : x.mala.n + ' beads'));
@@ -2872,7 +2872,7 @@ V.me = () => {
     + '<section class="col"><h2 class="h2" style="margin-bottom:4px">App</h2>'
     + row('Appearance', ({ auto: 'Automatic', light: 'Light', dark: 'Dark' })[S.settings.theme || 'auto'], 'themePick')
     + '<div class="setrow" style="cursor:default"><span class="col" style="gap:2px"><span style="font-size:16px;font-weight:600">' + (!navigator.onLine ? 'Offline · saving on this phone' : dirty.size ? 'Saving…' : 'Saved to the cloud ✓') + '</span><span class="small">' + (!navigator.onLine ? 'Everything will upload when you\'re back online.' : dirty.size ? dirty.size + ' change' + (dirty.size === 1 ? '' : 's') + ' waiting to upload' + (lastErr ? ' (' + esc(lastErr) + ')' : '') : 'Everything you add is saved as you go.') + '</span></span></div>'
-    + row('Save a backup file', 'Everything you\'ve written, as a file', 'backupDl')
+    + row('Backups', 'Saved every night · keep a copy in Google Drive', 'bkSheet')
     + row('What\'s new', 'Version ' + APP_VERSION + (S.settings.seenVer !== CHANGELOG[0].v ? ' · new' : ''), 'go', 'whatsnew')
     + (OWNER && !viewOnly() ? '' : row('Send feedback', 'An idea, or something not working', 'fbNew'))
     + row('Something not working?', 'Copy a report if something breaks', 'diag')
@@ -3054,8 +3054,9 @@ V.daystory = p => {
   const jn = Object.values(S.journal || {}).filter(j => j && !j.deleted && j.date === d), sm = Object.values(S.smruti || {}).filter(x => x && !x.deleted && x.date === d);
   const done = doneNames(d), card = (title, body, bg) => '<section class="card col" style="gap:8px' + (bg ? ';background:' + bg : '') + '"><span class="eyebrow">' + title + '</span>' + body + '</section>';
   let h = '';
-  h += c ? card('How you felt', '<div class="row" style="gap:12px"><span style="width:18px;height:18px;border-radius:9px;background:' + QUADS[c.q].bg + ';flex-shrink:0"></span><span class="serif" style="font-size:26px">' + esc(c.w) + '</span><span class="small" style="margin-left:auto">' + mins(toMins(c.at)) + '</span></div>'
-    + ((c.tags || []).length ? '<div class="chips">' + c.tags.map(t => '<span class="chip" style="min-height:30px;padding:4px 12px;font-size:13px">' + esc(t) + '</span>').join('') + '</div>' : '') + (c.note ? '<p style="font-size:16px;line-height:1.5">' + esc(c.note) + '</p>' : ''))
+  const cks = (dd.checkins || []).slice().sort((x, y) => toMins(x.at) - toMins(y.at));
+  h += cks.length ? card('How you felt' + (cks.length > 1 ? ' through the day' : ''), cks.map((k, i) => '<div class="col" style="gap:6px' + (i ? ';border-top:1px solid var(--line);padding-top:10px' : '') + '"><div class="row" style="gap:12px"><span style="width:18px;height:18px;border-radius:9px;background:' + QUADS[k.q].bg + ';flex-shrink:0"></span><span class="serif" style="font-size:' + (cks.length > 1 ? 22 : 26) + 'px">' + esc(k.w) + '</span><span class="small" style="margin-left:auto">' + mins(toMins(k.at)) + '</span></div>'
+    + ((k.tags || []).length ? '<div class="chips">' + k.tags.map(t => '<span class="chip" style="min-height:30px;padding:4px 12px;font-size:13px">' + esc(t) + '</span>').join('') + '</div>' : '') + (k.note ? '<p style="font-size:16px;line-height:1.5">' + esc(k.note) + '</p>' : '') + '</div>').join(''))
     : card('How you felt', '<p class="sub">No check-in this day.</p>');
   if ((dd.lift || []).length) h += card('What lifted you', '<div class="chips">' + dd.lift.map(t => '<span class="chip on" style="min-height:30px;padding:4px 12px;font-size:13px">' + esc(t) + '</span>').join('') + '</div>');
   if (sl.bed || sl.wakes || (sl.night || []).length) h += card('Sleep', '<div class="grid2"><div class="stat"><b>' + (sh != null ? fmtH(sh) : '–') + '</b><span class="small">asleep' + (sl.bed ? ' · ' + mins(toMins(sl.bed)) + ' to ' + mins(toMins(sl.wake)) : '') + '</span></div><div class="stat"><b>' + (sl.wakes || (sl.night || []).length || 0) + '</b><span class="small">wake-ups</span></div></div>'
@@ -3189,9 +3190,13 @@ function weeksCard() {
 }
 
 /* ===== Prapti v1.1: teachings library, full history, What's new, health report PDF, Tilak's dashboard ===== */
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.2';
 /* Her-facing update log. Tilak's admin changes are deliberately left out. Newest first. */
 const CHANGELOG = [
+  { v: '1.2', date: '', items: [
+    'Check in as often as you like: every check-in through the day is now kept, and tapping a day shows how you felt from morning to night.',
+    'Backups in Me: a copy of everything is saved every night, and you can keep one in Google Drive.',
+  ] },
   { v: '1.1', date: '2026-09-29', items: [
     'A teachings library: 178 teachings in 9 themes, with search, picks for how you\'re feeling, and a Completed shelf so new ones come first.',
     'Your week in Prapti: a short story of your week, ready every Sunday evening.',
@@ -3481,7 +3486,7 @@ function withHer(fn) {
 function reportData(per) {
   const first = firstDay() || TODAY, from = per === '4w' ? addDays(TODAY, -27) : per === '3m' ? addDays(TODAY, -90) : first;
   const start = from < first ? first : from, ds = []; for (let d = start; d <= TODAY; d = addDays(d, 1)) ds.push(d);
-  const rows = ds.map(d => { const x = S.days[d] || {}, c = dayCheck(d), sl = x.sleep || {}; return { d, c: c ? { w: c.w, q: c.q, mood: moodName(c.q), tags: c.tags || [] } : null, done: doneNames(d).length, sleep: sleepHours(sl), bed: sl.bed || '', wake: sl.wake || '', wakes: sl.wakes != null ? sl.wakes : (sl.night || []).length || (sl.bed ? 0 : null), up: showedUp(d) }; });
+  const rows = ds.map(d => { const x = S.days[d] || {}, c = dayCheck(d), sl = x.sleep || {}; const ws = (x.checkins || []).map(k => k.w).filter(Boolean); return { d, c: c ? { w: ws.length > 1 ? ws.join(', ') : c.w, q: c.q, mood: moodName(c.q) + (ws.length > 1 ? ' (latest)' : ''), tags: c.tags || [] } : null, done: doneNames(d).length, sleep: sleepHours(sl), bed: sl.bed || '', wake: sl.wake || '', wakes: sl.wakes != null ? sl.wakes : (sl.night || []).length || (sl.bed ? 0 : null), up: showedUp(d) }; });
   const wk = Object.keys(S.weekly).sort().filter(k => k >= addDays(start, -6)).map(k => ({ d: k, score: S.weekly[k].score, gad: S.weekly[k].gad, q9: (S.weekly[k].answers || [])[8] }));
   return { from: start, to: TODAY, rows, wk, rtms: S.rtms.sessions.filter(s => s >= start).length, name: 'Chhaya' };
 }
@@ -3591,7 +3596,7 @@ function makePDF(R) {
 
   // 3. Daily table
   heading('Day by day');
-  const dc = [['Date', 30], ['Feeling', 30], ['Mood area', 44], ['Tasks done', 20], ['Sleep', 18], ['Wake-ups', 16], ['About', 20]];
+  const dc = [['Date', 30], ['Feeling', 42], ['Mood area', 32], ['Tasks done', 20], ['Sleep', 18], ['Wake-ups', 16], ['About', 20]];
   tableHead(dc);
   R.rows.slice().reverse().forEach(r => tableRow(dc, [parse(r.d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }), r.c ? r.c.w : '-', r.c ? r.c.mood : '', r.up ? r.done : '-', r.sleep != null ? fmtH(r.sleep) : '-', r.wakes != null ? r.wakes : '-', r.c ? (r.c.tags || []).slice(0, 2).join(', ') : '']));
   function tableHead(cols) { need(12); doc.setFillColor(248, 243, 236); doc.rect(M, y - 4, CW, 6.5, 'F'); doc.setFont('helvetica', 'bold'); doc.setFontSize(8); col(INK); let x = M + 2; cols.forEach(c => { text(c[0], x, y); x += c[1] * CW / cols.reduce((a, b) => a + b[1], 0); }); y += 6; }
@@ -3849,7 +3854,18 @@ A.bkNow = async () => {
   } catch (e) { logErr('backup', e.message || e); toast('Couldn\'t make the backup'); }
 };
 
+/* Backups for Chhaya (Me > App > Backups): the same nightly copies, plus back up now */
+async function bkSheet() {
+  const bk = BK && BK.latest;
+  sheet('<div class="between"><span class="h2">Backups</span>' + closeBtn('closeSheet') + '</div>'
+    + '<p class="sub">Every night a full copy of everything you enter is saved privately. You can also keep a copy in Google Drive.</p>'
+    + (bk ? '<button class="btn" data-a="bkLatest">Save last night\'s backup</button><span class="small" style="text-align:center">From ' + shortDate(bk.date) + '</span>' : BK ? '<p class="small">No nightly backup yet. Use Back up now.</p>' : '<p class="small">Checking for last night\'s backup…</p>')
+    + '<button class="btn soft" data-a="bkNow">Back up now</button>'
+    + '<p class="small">When your phone asks where to save, choose Google Drive, then Prapti App, then 1. Daily backups.</p>');
+}
+A.bkSheet = async () => { bkSheet(); if (!BK || !BK.latest) { await loadBackups(); if ($('.sheet')) bkSheet(); } };
+
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=ba2df64a').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=cb51e05e').catch(() => {}));</script>
 </body>
 </html>
