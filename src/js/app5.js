@@ -164,11 +164,11 @@ async function start() {
   let session = null;
   try { const { data } = await sb.auth.getSession(); session = data.session; } catch (e) {}
   if (!session) { route = null; go('login', null, { replace: true }); return; }
-  if (RECOVERY) { USER = session.user; OWNER = (USER.email || '').toLowerCase() === OWNER_EMAIL; route = null; go('newpw', null, { replace: true }); return; }
+  if (RECOVERY) { USER = session.user; OWNER = isOwnerEmail(USER.email); route = null; go('newpw', null, { replace: true }); return; }
   signedIn(session.user);
 }
 function signedIn(u) {
-  USER = u; OWNER = (u.email || '').toLowerCase() === OWNER_EMAIL;
+  USER = u; OWNER = isOwnerEmail(u.email);
   if (OWNER && !OMODE) { try { ['prapti-state-v1', 'prapti-bases-v1', 'prapti-dirty-v1'].forEach(k => localStorage.removeItem(k)); localStorage.setItem('prapti-owner-mode', 'sandbox'); } catch (e) {} location.reload(); return; }
   boot(); startSync();
 }

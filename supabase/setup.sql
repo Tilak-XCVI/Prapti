@@ -76,8 +76,8 @@ create policy "media write" on storage.objects for insert to authenticated with 
 
 -- 7. The two people allowed in.
 insert into public.allowed_users (email, can_write) values
-  ('chhayap18@gmail.com', true),
-  ('tilak@parmrgroup.com', true)
+  ('HER_EMAIL_HERE', true),
+  ('OWNER_EMAIL_HERE', true)
 on conflict (email) do update set can_write = excluded.can_write;
 
 select 'Prapti setup complete' as result;

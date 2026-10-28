@@ -61,7 +61,10 @@ const gicon = k => '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" 
 
 /* ---------- state + storage: Supabase, with an offline queue and 3-way field merge ---------- */
 const SB_URL = 'https://pfltodlzcflxqgniznag.supabase.co', SB_KEY = 'sb_publishable_tjEF35iES5TJ0MUNgL_sYw_C9A5C4Xm';
-const OWNER_EMAIL = 'tilak@parmrgroup.com';
+// The owner account is recognised by a short fingerprint of its email, so no address appears in this public code.
+const OWNER_HASH = 'cd785d5a';
+const emailHash = e => { let x = 2166136261; for (const c of String(e || '').toLowerCase()) { x ^= c.charCodeAt(0); x = Math.imul(x, 16777619); } return (x >>> 0).toString(16); };
+const isOwnerEmail = e => emailHash(e) === OWNER_HASH;
 const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'prapti-auth' } });
 const APP_VER = 10;
 /* Tilak's account has two modes: his own test space ('sandbox', saved separately) or Chhaya's app, view only ('hers') */

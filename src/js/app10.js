@@ -283,7 +283,7 @@ async function loadHer() {
   if (d.error) throw d.error;
   const days = {}; (d.data || []).forEach(r => days[r.id.slice(5)] = Object.assign(DAYDEF(r.id.slice(5)), r.data || {}));
   const weekly = {}; (w.data || []).forEach(r => weekly[r.id.slice(7)] = r.data || {});
-  ADM = { days, weekly, settings: Object.assign(DEF().settings, (st.data && st.data.data) || {}), rtms: Object.assign(DEF().rtms, (rt.data && rt.data.data) || {}), logs: (lg.data || []).map(r => r.data).filter(x => x && (x.user || '').toLowerCase() !== OWNER_EMAIL).sort((a, b) => (b.at || '') < (a.at || '') ? -1 : 1), at: Date.now() };
+  ADM = { days, weekly, settings: Object.assign(DEF().settings, (st.data && st.data.data) || {}), rtms: Object.assign(DEF().rtms, (rt.data && rt.data.data) || {}), logs: (lg.data || []).map(r => r.data).filter(x => x && !isOwnerEmail(x.user)).sort((a, b) => (b.at || '') < (a.at || '') ? -1 : 1), at: Date.now() };
   if (route && ['admin', 'report', 'me'].includes(route.v)) render(true);
 }
 function withHer(fn) {

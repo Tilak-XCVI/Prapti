@@ -821,7 +821,10 @@ const gicon = k => '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" 
 
 /* ---------- state + storage: Supabase, with an offline queue and 3-way field merge ---------- */
 const SB_URL = 'https://pfltodlzcflxqgniznag.supabase.co', SB_KEY = 'sb_publishable_tjEF35iES5TJ0MUNgL_sYw_C9A5C4Xm';
-const OWNER_EMAIL = 'tilak@parmrgroup.com';
+// The owner account is recognised by a short fingerprint of its email, so no address appears in this public code.
+const OWNER_HASH = 'cd785d5a';
+const emailHash = e => { let x = 2166136261; for (const c of String(e || '').toLowerCase()) { x ^= c.charCodeAt(0); x = Math.imul(x, 16777619); } return (x >>> 0).toString(16); };
+const isOwnerEmail = e => emailHash(e) === OWNER_HASH;
 const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'prapti-auth' } });
 const APP_VER = 10;
 /* Tilak's account has two modes: his own test space ('sandbox', saved separately) or Chhaya's app, view only ('hers') */
@@ -2952,11 +2955,11 @@ async function start() {
   let session = null;
   try { const { data } = await sb.auth.getSession(); session = data.session; } catch (e) {}
   if (!session) { route = null; go('login', null, { replace: true }); return; }
-  if (RECOVERY) { USER = session.user; OWNER = (USER.email || '').toLowerCase() === OWNER_EMAIL; route = null; go('newpw', null, { replace: true }); return; }
+  if (RECOVERY) { USER = session.user; OWNER = isOwnerEmail(USER.email); route = null; go('newpw', null, { replace: true }); return; }
   signedIn(session.user);
 }
 function signedIn(u) {
-  USER = u; OWNER = (u.email || '').toLowerCase() === OWNER_EMAIL;
+  USER = u; OWNER = isOwnerEmail(u.email);
   if (OWNER && !OMODE) { try { ['prapti-state-v1', 'prapti-bases-v1', 'prapti-dirty-v1'].forEach(k => localStorage.removeItem(k)); localStorage.setItem('prapti-owner-mode', 'sandbox'); } catch (e) {} location.reload(); return; }
   boot(); startSync();
 }
@@ -3474,7 +3477,7 @@ async function loadHer() {
   if (d.error) throw d.error;
   const days = {}; (d.data || []).forEach(r => days[r.id.slice(5)] = Object.assign(DAYDEF(r.id.slice(5)), r.data || {}));
   const weekly = {}; (w.data || []).forEach(r => weekly[r.id.slice(7)] = r.data || {});
-  ADM = { days, weekly, settings: Object.assign(DEF().settings, (st.data && st.data.data) || {}), rtms: Object.assign(DEF().rtms, (rt.data && rt.data.data) || {}), logs: (lg.data || []).map(r => r.data).filter(x => x && (x.user || '').toLowerCase() !== OWNER_EMAIL).sort((a, b) => (b.at || '') < (a.at || '') ? -1 : 1), at: Date.now() };
+  ADM = { days, weekly, settings: Object.assign(DEF().settings, (st.data && st.data.data) || {}), rtms: Object.assign(DEF().rtms, (rt.data && rt.data.data) || {}), logs: (lg.data || []).map(r => r.data).filter(x => x && !isOwnerEmail(x.user)).sort((a, b) => (b.at || '') < (a.at || '') ? -1 : 1), at: Date.now() };
   if (route && ['admin', 'report', 'me'].includes(route.v)) render(true);
 }
 function withHer(fn) {
@@ -3866,6 +3869,6 @@ async function bkSheet() {
 A.bkSheet = async () => { bkSheet(); if (!BK || !BK.latest) { await loadBackups(); if ($('.sheet')) bkSheet(); } };
 
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=cb51e05e').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=ce212e18').catch(() => {}));</script>
 </body>
 </html>

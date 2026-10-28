@@ -6,7 +6,8 @@
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const HER = "chhayap18@gmail.com", HIM = "tilak@parmrgroup.com";
+// Set these two secrets in Edge Functions > Secrets: HER_EMAIL (Chhaya) and OWNER_EMAIL (Tilak).
+const HER = (Deno.env.get("HER_EMAIL") || "").toLowerCase(), HIM = (Deno.env.get("OWNER_EMAIL") || "").toLowerCase();
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 webpush.setVapidDetails("mailto:" + HIM, Deno.env.get("VAPID_PUBLIC")!, Deno.env.get("VAPID_PRIVATE")!);
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-cron-key", "Access-Control-Allow-Methods": "POST, OPTIONS" };
