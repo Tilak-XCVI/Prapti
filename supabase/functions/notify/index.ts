@@ -1,6 +1,6 @@
 // Prapti reminders. Supabase runs this every 5 minutes (pg_cron). It reads Chhaya's day and sends
 // the push reminders that are due, once each. It also tells Tilak when she sends a suggestion,
-// sends his surprise notes and dashboard messages, alerts him to the same quiet flags his dashboard shows,
+// sends his surprise notes and dashboard messages,
 // and saves a full nightly backup to the private 'backups' storage bucket.
 // Secrets needed (Edge Functions > Secrets): VAPID_PUBLIC, VAPID_PRIVATE, CRON_KEY.
 import webpush from "npm:web-push@3.6.7";
@@ -132,12 +132,7 @@ Deno.serve(async (req) => {
     if (!(await once("note:" + n.id))) continue;
     log.push("note:" + (await sendTo(HER, { title: "A note from Tilak", body: "Open Prapti to read it.", url: "./", tag: "note" })));
   }
-  // quiet flags → Tilak (the same checks as his dashboard). Self-harm answer: straight away; the rest at 7pm.
-  for (const f of await flags(now)) {
-    if (!f.urgent && (now.mins < 19 * 60 || now.mins >= 19 * 60 + 45)) continue;
-    if (!(await once("flag:" + f.key))) continue;
-    log.push("flag:" + (await sendTo(HIM, { title: f.urgent ? "Please check in with Chhaya" : "Prapti: worth a check-in", body: f.t, url: "./", tag: "flag-" + f.k })));
-  }
+  // Wellbeing flags show on Tilak's dashboard only. No push notification is sent for them (his choice, Nov 2026).
   // nightly backup: once a day after 3am, a full copy of every record goes to the private 'backups' storage bucket
   if (now.mins >= 180 && (await once("backup:" + now.date))) {
     try {
