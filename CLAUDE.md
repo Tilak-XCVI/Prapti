@@ -23,6 +23,13 @@ Prapti is a private daily-companion web app (PWA) for one person, Chhaya. It sup
 - `supabase/functions/notify/index.ts`: runs every 5 minutes (pg_cron). Sends reminders, notes and alerts, and saves a nightly full backup to the private storage bucket `backups`. After editing it, the owner must redeploy it in the Supabase dashboard (Edge Functions).
 - SQL setup files are in `supabase/`. `reset.sql` WIPES ALL DATA: never run it or suggest it.
 
+## Family (Me > Family, v1.2)
+- Chhaya chooses people (name + email) in `S.settings.family`. Each needs their own Supabase login (Authentication > Users > Add user). They are NOT in `allowed_users`.
+- On sign-in, `roleOf()` checks `allowed_users`, then `family_role()`; family accounts get only `V.fhome` / `V.falert` / `V.fsetup` (no tabs). Anything unclear opens the app as before.
+- Her phone writes the summary to `family/status`; her button writes `family/nudge`, and any words she adds go in `family/messages`. The notify function writes `family/alert` and sends their alerts.
+- Switching anything off keeps the old setting in force for 48 hours (`prev`, `prevUntil`) and tells them at once (`changedAt`). The safety lock (`lockUntil`, `lockPeople`) keeps alerts going until that date. Only she can set it, and nothing can make it permanent.
+- `famEff()` in app10.js and `famEff()` in the notify function must stay identical. Access rules: `supabase/family.sql` (family members can read only `family/status`, `family/alert`, `family/messages`).
+
 ## Hard rules
 - **Never delete, reset or overwrite her data.** Any change to how data is stored must keep reading old records.
 - **Never ask for, handle or commit secrets**: passwords, the Supabase secret/service-role key, the VAPID private key, the cron key. This repository is public.

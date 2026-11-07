@@ -75,6 +75,7 @@ V.me = () => {
     + '</section>'
     + '<section class="col"><h2 class="h2" style="margin-bottom:4px">My space</h2>'
     + row('My safety plan', S.safety.people.length ? S.safety.people.length + (S.safety.people.length === 1 ? ' person' : ' people') + ' and your steps' : 'Fill it in on a good day', 'go', 'safety')
+    + row('Family', famSub(), 'go', 'family')
     + row('My darshan photos', ownList().length ? ownList().length + ' added' : 'Add your own photos and quotes', 'go', 'mydarshan')
     + row('Saved darshan', S.saved.darshan.length ? S.saved.darshan.length + ' saved' : 'Tap the heart in Darshan', 'go', 'saved')
     + ((!OWNER || viewOnly()) && notesList().filter(noteLive).length ? row('Notes', notesList().filter(noteLive).length + (notesList().filter(noteLive).length === 1 ? ' note' : ' notes'), 'go', 'notes') : '')
@@ -170,8 +171,10 @@ async function start() {
 function signedIn(u) {
   USER = u; OWNER = isOwnerEmail(u.email);
   if (OWNER && !OMODE) { try { ['prapti-state-v1', 'prapti-bases-v1', 'prapti-dirty-v1'].forEach(k => localStorage.removeItem(k)); localStorage.setItem('prapti-owner-mode', 'sandbox'); } catch (e) {} location.reload(); return; }
-  boot(); startSync();
+  if (OWNER) { boot(); startSync(); return; }
+  // family accounts (Me > Family) get their own short view; anyone else opens the app as before
+  roleOf().then(r => { if (r === 'family') famStart(); else { boot(); startSync(); } });
 }
 A.signOut = () => sheet('<span class="h2">Sign out?</span><p class="sub">Your entries stay safe in the cloud. You\'ll need your password to sign back in.</p><div class="row"><button class="btn" data-a="signOutYes">Sign out</button><button class="btn soft" data-a="closeSheet">Stay</button></div>');
-A.signOutYes = async () => { window.scrollTo(0, 0); closeSheet(); await flush(); await sb.auth.signOut(); try { localStorage.removeItem(LS); localStorage.removeItem(LSB); localStorage.removeItem(LSD); } catch (e) {} location.reload(); };
+A.signOutYes = async () => { window.scrollTo(0, 0); closeSheet(); await flush(); await sb.auth.signOut(); try { localStorage.removeItem(LS); localStorage.removeItem(LSB); localStorage.removeItem(LSD); localStorage.removeItem('prapti-role'); localStorage.removeItem('prapti-fam'); } catch (e) {} location.reload(); };
 start();

@@ -1,6 +1,6 @@
 // Prapti reminders. Supabase runs this every 5 minutes (pg_cron). It reads Chhaya's day and sends
 // the push reminders that are due, once each. It also tells Tilak when she sends a suggestion,
-// sends his surprise notes and dashboard messages,
+// sends his surprise notes and dashboard messages, sends family alerts (Me > Family) to the people she chose,
 // and saves a full nightly backup to the private 'backups' storage bucket.
 // Secrets needed (Edge Functions > Secrets): VAPID_PUBLIC, VAPID_PRIVATE, CRON_KEY.
 import webpush from "npm:web-push@3.6.7";
@@ -87,6 +87,67 @@ async function flags(now: { date: string }) {
   return out;
 }
 
+// ---------- Family (Me > Family) ----------
+// Mirrors famEff() in the app (src/js/app10.js): what is in force right now, after the 48-hour delay and the safety lock.
+const famEm = (a: any[]) => (a || []).map((x: any) => String(x?.email || (typeof x === "string" ? x : "")).trim().toLowerCase()).filter(Boolean);
+export function famEff(f: any, nowMs: number, today: string) {
+  f = f || {};
+  const inPrev = !!(f.prev && f.prevUntil && Date.parse(f.prevUntil) > nowMs), P = inPrev ? f.prev : {};
+  const on = !!f.on || (inPrev && !!P.on), locked = !!f.lockUntil && f.lockUntil >= today;
+  const al = (k: string, d: boolean) => locked || (on && (!!(f.alerts?.[k] ?? d) || (inPrev && !!(P.alerts?.[k]))));
+  const people = [...new Set([...famEm(f.people), ...(inPrev ? famEm(P.people) : [])])];
+  const to = [...new Set([...(on ? people : []), ...(locked ? [...famEm(f.people), ...famEm(f.lockPeople)] : [])])];
+  return { on, locked, to, alerts: { hard: al("hard", true), quiet: al("quiet", true), weekly: al("weekly", false), button: locked || on } };
+}
+const FAM_T = "Please check in with Chhaya";
+async function famSend(to: string[], kind: string, title: string, body: string) {
+  await sb.from("docs").upsert({ id: "family/alert", col: "family", data: { at: new Date().toISOString(), kind } });
+  let n = 0;
+  for (const e of to) n += await sendTo(e, { title, body, url: "./", tag: "family-" + kind });
+  return n;
+}
+async function familyAlerts(now: { date: string; mins: number }, settings: any) {
+  const f = settings?.family, out: string[] = [];
+  if (!f) return out;
+  const eff = famEff(f, Date.now(), now.date);
+  if (!eff.to.length) return out;
+  // her button, with or without a message
+  const nudge = await doc("family/nudge");
+  if (eff.alerts.button && nudge?.at && Date.now() - Date.parse(nudge.at) < 36e5 && (await once("fam:nudge:" + nudge.at)))
+    out.push("fam-nudge:" + (await famSend(eff.to, nudge.msg ? "message" : "nudge", nudge.msg ? "A message from Chhaya" : FAM_T, nudge.msg ? "Open Prapti to read it." : "She asked Prapti to let you know.")));
+  // she switched something off: they hear straight away (the old setting stays in force for 48 hours)
+  if (f.changedAt && Date.now() - Date.parse(f.changedAt) < 6 * 36e5 && (await once("fam:chg:" + f.changedAt)))
+    out.push("fam-chg:" + (await famSend(eff.to, "changed", "Chhaya changed her family updates", "Please check in with her.")));
+  const { data: dRows } = await sb.from("docs").select("id, data").eq("col", "days").gte("id", "days/" + addDays(now.date, -30));
+  const { data: first } = await sb.from("docs").select("id").eq("col", "days").order("id").limit(1);
+  const { data: wRows } = await sb.from("docs").select("id, data").eq("col", "weekly").order("id");
+  const days: Record<string, any> = {}; (dRows || []).forEach((r: any) => (days[r.id.slice(5)] = r.data || {}));
+  const shown = (x: any) => !!x && (x.begun || Object.values(x.done || {}).some(Boolean) || (x.checkins || []).length > 0 || (x.opens || []).length > 0);
+  const chk = (d: string) => { const c = (days[d] || {}).checkins || []; return c[c.length - 1] || null; };
+  // weekly check-in: last question not "not at all"
+  const lw = (wRows || []).map((r: any) => ({ id: r.id.slice(7), ...(r.data || {}) })).pop();
+  if (eff.alerts.weekly && lw && (lw.answers || [])[8] > 0 && lw.id >= addDays(now.date, -7) && (await once("fam:q9:" + lw.id)))
+    out.push("fam-q9:" + (await famSend(eff.to, "checkin", FAM_T, "She may be having a tough time.")));
+  if (now.mins < 19 * 60) return out; // the slower signals go once, in the evening
+  // 5 hard days in a row: she chose Hard day, or her last check-in that day wasn't a pleasant one
+  if (eff.alerts.hard) {
+    let run = 0, start = "";
+    for (let k = 0; k < 21; k++) {
+      const d = addDays(now.date, -k), x = days[d], c = chk(d), hard = !!x && (x.mode === "hard" || (!!c && !PLEASANT(c.q)));
+      if (!hard) { if (k === 0 && !c) continue; break; }
+      run++; start = d;
+    }
+    if (run >= 5 && (await once("fam:hard:" + start))) out.push("fam-hard:" + (await famSend(eff.to, "checkin", FAM_T, "She may be having a tough time.")));
+  }
+  // not opened for 5 days
+  const f0 = first && first[0] ? first[0].id.slice(5) : null;
+  if (eff.alerts.quiet && f0 && f0 <= addDays(now.date, -5) && ![0, -1, -2, -3, -4].some((k) => shown(days[addDays(now.date, k)]))) {
+    const last = Object.keys(days).filter((d) => shown(days[d])).sort().pop() || "old";
+    if (await once("fam:quiet:" + last)) out.push("fam-quiet:" + (await famSend(eff.to, "checkin", FAM_T, "She may be having a tough time.")));
+  }
+  return out;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   const body = await req.json().catch(() => ({}));
@@ -95,7 +156,8 @@ Deno.serve(async (req) => {
     const jwt = (req.headers.get("authorization") || "").replace(/^Bearer /i, "");
     const { data } = await sb.auth.getUser(jwt);
     const email = data?.user?.email?.toLowerCase();
-    if (!email || ![HER, HIM].includes(email)) return new Response("no", { status: 401, headers: CORS });
+    const fam = (await doc("app/settings"))?.family || {};
+    if (!email || ![HER, HIM, ...famEm(fam.people), ...famEm(fam.lockPeople)].includes(email)) return new Response("no", { status: 401, headers: CORS });
     const n = await sendTo(email, { title: "Prapti", body: "Reminders are on. Jay Swaminarayan.", url: "./", tag: "test" });
     return new Response(JSON.stringify({ sent: n }), { headers: { ...CORS, "content-type": "application/json" } });
   }
@@ -132,6 +194,8 @@ Deno.serve(async (req) => {
     if (!(await once("note:" + n.id))) continue;
     log.push("note:" + (await sendTo(HER, { title: "A note from Tilak", body: "Open Prapti to read it.", url: "./", tag: "note" })));
   }
+  // family alerts → the people she chose in Me > Family
+  try { log.push(...(await familyAlerts(now, settings))); } catch (e: any) { log.push("family:failed " + (e?.message || e)); }
   // Wellbeing flags show on Tilak's dashboard only. No push notification is sent for them (his choice, Nov 2026).
   // nightly backup: once a day after 3am, a full copy of every record goes to the private 'backups' storage bucket
   if (now.mins >= 180 && (await once("backup:" + now.date))) {

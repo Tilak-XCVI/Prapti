@@ -104,7 +104,7 @@ function setData(key, v) { const [c, id] = split(key); if (c === 'app') S[id] = 
 function fieldsJ(o) { const r = {}; Object.keys(o || {}).forEach(f => r[f] = J(o[f])); return r; }
 function setSaveState() {}
 function viewOnly() { return !!OWNER && OMODE === 'hers'; }
-function save(key) { if (viewOnly() && !/^(notes|feedback)\//.test(String(key))) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); }
+function save(key) { if (viewOnly() && !/^(notes|feedback)\//.test(String(key))) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); if (typeof famHook === 'function') famHook(key); }
 async function flush() {
   if (freshStart) return;
   if (viewOnly()) [...dirty].forEach(k => { if (!/^(notes|feedback)\//.test(k)) dirty.delete(k); });
