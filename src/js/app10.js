@@ -5,7 +5,7 @@ const CHANGELOG = [
   { v: '1.2', date: '', items: [
     'Check in as often as you like: every check-in through the day is now kept, and tapping a day shows how you felt from morning to night.',
     'Backups in Me: a copy of everything is saved every night, and you can keep one in Google Drive.',
-    'Family, in Me: share a short summary of your day with people you choose, and they get a gentle alert if you might need them. You choose what they see.',
+    'Family, in Me: share a short summary of your day with Mum and Dad, and they get a gentle alert if you might need them. You choose what they see.',
     'A button to let your family know how you\'re feeling, with a few words if you want.',
     'A safety lock, chosen on a good day, that keeps family alerts going for the months you pick.',
     'The lotus now marks sabha on Today, in each day\'s story and on your calendar.',
@@ -679,13 +679,23 @@ async function bkSheet() {
 A.bkSheet = async () => { bkSheet(); if (!BK || !BK.latest) { await loadBackups(); if ($('.sheet')) bkSheet(); } };
 
 /* ===================== Family (v1.2) =====================
-   Chhaya chooses people in Me > Family. They sign in with their own account and see only a short summary,
+   Mum and Dad are set once by Tilak in Supabase (doc 'family/people', template supabase/family-people.sql), so their emails
+   never go in this public code. In Me > Family she chooses what they see and the alerts. They sign in with their own account and see only a short summary,
    which her phone writes to 'family/status'. Alerts are sent by the notify function (supabase/functions/notify).
    - Switching anything off keeps the old setting working for 48 hours (prev / prevUntil), and they're told at once (changedAt).
    - The safety lock (lockUntil, lockPeople) keeps alerts going to them until that date, whatever else changes. Only she sets it.
    - Her button writes 'family/nudge'; anything she writes with it goes in 'family/messages'.
    - Access rules: supabase/family.sql. Tilak's test space writes to sandbox, so nothing he tries reaches anyone. */
 let FAMILY = false, FAMD = null, FAMD_KEEP = null, famOpenedAt = '', famT = null;
+let FAMPEOPLE = (() => { try { return JSON.parse(localStorage.getItem('prapti-fampeople') || '[]'); } catch (e) { return []; } })();
+async function famPeopleLoad() {
+  if (FAMILY || !USER) return;
+  try { const { data, error } = await sb.from('docs').select('data').eq('id', 'family/people').maybeSingle(); if (error) throw error;
+    FAMPEOPLE = ((data && data.data && data.data.people) || []).filter(p => p && p.email).map(p => ({ name: String(p.name || 'Family').slice(0, 40), email: String(p.email).trim().toLowerCase() }));
+    try { localStorage.setItem('prapti-fampeople', JSON.stringify(FAMPEOPLE)); } catch (e) {}
+    if (route && (route.v === 'family' || route.v === 'me' || route.v === 'today')) render(true);
+  } catch (e) {}
+}
 const FAM_SEE = [['mode', 'My day', 'Good day, Steady or Hard day'], ['opened', 'When I open Prapti', 'And which days this week'], ['checkins', 'Check-ins', 'How many, never what I said'], ['done', 'What I\'ve done', 'My ticked tasks and sabha']];
 const FAM_AL = [['hard', '5 hard days in a row', 'Sent once, at 7pm'], ['quiet', 'Not opened for 5 days', 'Sent once, at 7pm'], ['weekly', 'My weekly check-in', 'If my answer to the last question isn\'t "not at all". They never see my answer.']];
 const FAM_MODE = { good: 'Good day', steady: 'Steady', hard: 'Hard day' };
@@ -693,7 +703,7 @@ const famEm = a => (a || []).map(x => String((x && x.email) || (typeof x === 'st
 const famUniq = a => [...new Set(a)];
 function famCfg() {
   const f = S.settings.family || {};
-  return { on: !!f.on, onSince: f.onSince || '', people: (f.people || []).slice(), see: Object.assign({ mode: true, opened: true, checkins: true, done: true }, f.see), alerts: Object.assign({ hard: true, quiet: true, weekly: false }, f.alerts), lockUntil: f.lockUntil || '', lockPeople: (f.lockPeople || []).slice(), prev: f.prev || null, prevUntil: f.prevUntil || '', changedAt: f.changedAt || '' };
+  return { on: !!f.on, onSince: f.onSince || '', people: FAMPEOPLE.slice(), see: Object.assign({ mode: true, opened: true, checkins: true, done: true }, f.see), alerts: Object.assign({ hard: true, quiet: true, weekly: false }, f.alerts), lockUntil: f.lockUntil || '', lockPeople: (f.lockPeople || []).slice(), prev: f.prev || null, prevUntil: f.prevUntil || '', changedAt: f.changedAt || '' };
 }
 // what is actually in force right now (the notify function works this out the same way)
 function famEff(f) {
@@ -709,7 +719,7 @@ function famEff(f) {
 }
 function famNames(list) { const n = (list || famCfg().people).map(p => p && p.name).filter(Boolean); return !n.length ? 'your family' : n.length === 1 ? n[0] : n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1]; }
 function famNameOf(email) { const f = famCfg(), all = f.people.concat((f.prev && f.prev.people) || []), p = all.find(x => famEm([x])[0] === email); return p && p.name ? p.name : email; }
-function famSub() { const f = famCfg(), e = famEff(f); if (!f.people.length && !e.locked) return 'Share a short summary with people you choose'; return (e.on ? 'Sharing with ' + esc(famNames(f.people.length ? f.people : null)) : 'Off') + (e.locked ? ' · safety lock on' : ''); }
+function famSub() { const f = famCfg(), e = famEff(f); if (!f.people.length && !e.locked) return 'Share a short summary with Mum and Dad'; return (e.on ? 'Sharing with ' + esc(famNames(f.people.length ? f.people : null)) : 'Off') + (e.locked ? ' · safety lock on' : ''); }
 const famLong = d => parse(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 const famClock = iso => { const d = new Date(iso); return mins(d.getHours() * 60 + d.getMinutes()); };
 const famWhen = iso => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '') + ', ' + famClock(iso);
@@ -738,12 +748,12 @@ V.family = () => {
   const lockBtns = lab => '<div class="row" style="gap:8px">' + [3, 6, 12].map(m => '<button class="btn soft" style="height:48px;font-size:15px" data-a="famLockAsk" data-m="' + m + '">' + lab(m) + '</button>').join('') + '</div>';
   const sent = ((S.family && S.family.messages) || {}).items || [];
   return '<main class="wrap nonav" style="gap:14px"><div class="between"><span class="pill">Family</span>' + closeBtn() + '</div>'
-    + '<h1 class="h1" style="margin-top:6px">Family</h1><p class="sub" style="margin-bottom:6px">Choose who sees a short summary of your day, and who gets a gentle alert if you might need them.</p>'
+    + '<h1 class="h1" style="margin-top:6px">Family</h1><p class="sub" style="margin-bottom:6px">Share a short summary of your day with ' + esc(famNames()) + ', and they get a gentle alert if you might need them. You choose what they see.</p>'
     + '<section class="card" style="padding:0 18px">' + srow('Share with family', f.on ? 'On since ' + (f.onSince ? famLong(f.onSince) : 'today') : e.on ? 'Switching off on ' + famWhen(f.prevUntil) : 'Off', tg(f.on, 'famOn', '', 'Share with family'), true) + '</section>'
     + (e.inPrev ? '<p class="small" style="line-height:1.5;margin-top:-4px">Your changes take effect on ' + famWhen(f.prevUntil) + '. ' + esc(famNames((f.prev && f.prev.people) || f.people)) + ' were told.</p>' : '')
     + h2('Who')
-    + '<section class="card" style="padding:0 18px">' + f.people.map((p, i) => '<div class="setrow" style="cursor:default"><span class="col" style="gap:2px;flex:1;min-width:0"><span style="font-size:16px;font-weight:600">' + esc(p.name) + '</span><span class="small" style="overflow-wrap:anywhere">' + esc(p.email) + '</span></span><button class="iconbtn" style="background:transparent;color:var(--hint)" data-a="famRm" data-i="' + i + '" aria-label="Remove ' + esc(p.name) + '">' + I.close + '</button></div>').join('')
-    + '<div class="col" style="gap:8px;padding:12px 0 14px"><input id="famName" class="field" placeholder="Name, like Mum" aria-label="Name" autocomplete="off"><input id="famEmail" class="field" type="email" placeholder="Their email" aria-label="Their email" autocomplete="off" data-enter="famAdd"><button class="link" style="align-self:flex-start;height:36px" data-a="famAdd">+ Add someone</button><span class="small" style="line-height:1.45">They sign in to Prapti with this email. Tilak sets up their account.</span></div></section>'
+    + '<section class="card" style="padding:0 18px">' + (f.people.length ? f.people.map((p, i) => '<div class="setrow" style="cursor:default' + (i === f.people.length - 1 ? ';border-bottom:none' : '') + '"><span class="col" style="gap:2px;flex:1;min-width:0"><span style="font-size:16px;font-weight:600">' + esc(p.name) + '</span><span class="small" style="overflow-wrap:anywhere">' + esc(p.email) + '</span></span></div>').join('')
+      : '<p class="small" style="padding:16px 0;line-height:1.5">Not set up yet. Tilak is adding Mum and Dad.</p>') + '</section>'
     + h2('What they see')
     + '<section class="card" style="padding:0 18px">' + FAM_SEE.map(([k, t, s]) => srow(t, s, tg(f.see[k], 'famSee', k, t))).join('') + '<p class="small" style="padding:12px 0 14px;line-height:1.5">Never your journal, notes, sleep, rTMS or check-in answers.</p></section>'
     + h2('Alerts')
@@ -762,7 +772,7 @@ V.family = () => {
 };
 A.famOn = () => {
   const f = famCfg(), e = famEff(f);
-  if (!f.on) { if (!f.people.length) return toast('Add someone first'); famSet(x => { x.on = true; if (!e.on || !x.onSince) x.onSince = TODAY; }); hap(); return; }
+  if (!f.on) { if (!f.people.length) return toast('Not set up yet'); famSet(x => { x.on = true; if (!e.on || !x.onSince) x.onSince = TODAY; }); hap(); return; }
   sheet('<span class="h2">Switch off sharing?</span><p class="sub">It takes effect in 48 hours, and ' + esc(famNames()) + ' will be told straight away.' + (e.locked ? ' Your safety lock keeps alerts going until ' + famLong(f.lockUntil) + '.' : '') + '</p><div class="row"><button class="btn" data-a="famOffYes">Switch off</button><button class="btn soft" data-a="closeSheet">Keep on</button></div>');
 };
 A.famOffYes = () => { closeSheet(); famSet(x => { x.on = false; }); };
@@ -774,16 +784,8 @@ A.famAl = el => {
   famSet(x => { x.alerts[k] = !x.alerts[k]; });
 };
 A.famWeeklyYes = () => { closeSheet(); famSet(x => { x.alerts.weekly = true; }); };
-A.famAdd = () => {
-  const n = ($('#famName').value || '').trim().slice(0, 40), m = ($('#famEmail').value || '').trim().toLowerCase();
-  if (!n || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m)) return toast('Add a name and their email');
-  if (famEm(famCfg().people).includes(m)) return toast('Already added');
-  famSet(x => { x.people.push({ name: n, email: m }); }); hap();
-};
-A.famRm = el => { const p = famCfg().people[+el.dataset.i]; if (!p) return; sheet('<span class="h2">Remove ' + esc(p.name) + '?</span><p class="sub">' + (famEff().on ? 'It takes effect in 48 hours, and they\'ll be told straight away.' : 'They won\'t see anything from Prapti.') + '</p><div class="row"><button class="btn" data-a="famRmYes" data-i="' + el.dataset.i + '">Remove</button><button class="btn soft" data-a="closeSheet">Keep</button></div>'); };
-A.famRmYes = el => { closeSheet(); const i = +el.dataset.i; famSet(x => { x.people.splice(i, 1); }); };
 A.famLockAsk = el => {
-  const m = +el.dataset.m, f = famCfg(); if (!f.people.length) return toast('Add someone first');
+  const m = +el.dataset.m, f = famCfg(); if (!f.people.length) return toast('Not set up yet');
   const until = famAddMonths(f.lockUntil && f.lockUntil >= TODAY ? f.lockUntil : TODAY, m);
   sheet('<span class="h2">Safety lock until ' + famLong(until) + '?</span><p class="sub">Until then, ' + esc(famNames()) + ' will get "Please check in with Chhaya" if you might need them, even if you switch everything else off. That includes your weekly check-in answer. They never see any details. You can\'t undo this until it ends.</p><div class="row"><button class="btn" data-a="famLockYes" data-u="' + until + '">Turn on the lock</button><button class="btn soft" data-a="closeSheet">Not now</button></div>');
 };
@@ -791,7 +793,7 @@ A.famLockYes = el => { closeSheet(); const u = el.dataset.u; famSet(x => { x.loc
 
 /* ---------- her side: the button, with a few words if she wants ---------- */
 A.famNudge = () => {
-  if (!famEff().to.length) return toast('Add someone in Me, Family first');
+  if (!famEff().to.length) return toast('Switch on Family in Me first');
   sheet('<div class="between"><span class="h2">Let ' + esc(famNames()) + ' know</span>' + closeBtn('closeSheet') + '</div><p class="sub">They\'ll get an alert to check in with you. You can tell them how you\'re feeling, if you want to.</p>'
     + '<textarea id="famMsg" rows="3" maxlength="600" placeholder="A few words, if you want" aria-label="Your message" style="width:100%;min-height:96px;border:none;border-radius:16px;background:var(--card);padding:14px;font-family:var(--serif);font-size:19px;line-height:1.4;resize:vertical"></textarea>'
     + '<button class="btn" data-a="famSend">Send</button>');
@@ -828,7 +830,7 @@ function famWrite() { if (FAMILY || !USER || !ready || viewOnly()) return; const
 function famHook(key) { if (FAMILY || viewOnly()) return; if (/^days\//.test(key) || key === 'settings') { clearTimeout(famT); famT = setTimeout(famWrite, 3000); } }
 function famOpened() { if (FAMILY || viewOnly()) return; famOpenedAt = new Date().toISOString(); let n = 0; const t = setInterval(() => { if (ready) { clearInterval(t); famWrite(); } else if (++n > 60) clearInterval(t); }, 1000); }
 const _bootF = boot;
-boot = function () { if (FAMILY) { route = null; go('fhome', null, { replace: true }); famLoad(); return; } _bootF(); famOpened(); };
+boot = function () { if (FAMILY) { route = null; go('fhome', null, { replace: true }); famLoad(); return; } _bootF(); famOpened(); famPeopleLoad(); };
 const _backF = back;
 back = function (fb) { return _backF(FAMILY ? 'fhome' : fb); };
 document.addEventListener('visibilitychange', () => { if (document.hidden) return; if (FAMILY) famLoad(); else if (USER && famOpenedAt && Date.now() - Date.parse(famOpenedAt) > 3e5) famOpened(); });

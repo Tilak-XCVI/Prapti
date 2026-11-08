@@ -176,5 +176,5 @@ function signedIn(u) {
   roleOf().then(r => { if (r === 'family') famStart(); else { boot(); startSync(); } });
 }
 A.signOut = () => sheet('<span class="h2">Sign out?</span><p class="sub">Your entries stay safe in the cloud. You\'ll need your password to sign back in.</p><div class="row"><button class="btn" data-a="signOutYes">Sign out</button><button class="btn soft" data-a="closeSheet">Stay</button></div>');
-A.signOutYes = async () => { window.scrollTo(0, 0); closeSheet(); await flush(); await sb.auth.signOut(); try { localStorage.removeItem(LS); localStorage.removeItem(LSB); localStorage.removeItem(LSD); localStorage.removeItem('prapti-role'); localStorage.removeItem('prapti-fam'); } catch (e) {} location.reload(); };
+A.signOutYes = async () => { window.scrollTo(0, 0); closeSheet(); await flush(); await sb.auth.signOut(); try { localStorage.removeItem(LS); localStorage.removeItem(LSB); localStorage.removeItem(LSD); localStorage.removeItem('prapti-role'); localStorage.removeItem('prapti-fam'); localStorage.removeItem('prapti-fampeople'); } catch (e) {} location.reload(); };
 start();

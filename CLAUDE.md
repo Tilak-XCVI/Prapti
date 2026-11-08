@@ -24,7 +24,7 @@ Prapti is a private daily-companion web app (PWA) for one person, Chhaya. It sup
 - SQL setup files are in `supabase/`. `reset.sql` WIPES ALL DATA: never run it or suggest it.
 
 ## Family (Me > Family, v1.2)
-- Chhaya chooses people (name + email) in `S.settings.family`. Each needs their own Supabase login (Authentication > Users > Add user). They are NOT in `allowed_users`.
+- Mum and Dad (name + email) live in the doc `family/people`, set by Tilak with `supabase/family-people.sql` in the SQL Editor, so their emails never go in this public repo. Chhaya can't add or remove people; in Me > Family she chooses what they see and the alerts (`S.settings.family`). Each parent needs their own Supabase login (Authentication > Users > Add user). They are NOT in `allowed_users`.
 - On sign-in, `roleOf()` checks `allowed_users`, then `family_role()`; family accounts get only `V.fhome` / `V.falert` / `V.fsetup` (no tabs). Anything unclear opens the app as before.
 - Her phone writes the summary to `family/status`; her button writes `family/nudge`, and any words she adds go in `family/messages`. The notify function writes `family/alert` and sends their alerts.
 - Switching anything off keeps the old setting in force for 48 hours (`prev`, `prevUntil`) and tells them at once (`changedAt`). The safety lock (`lockUntil`, `lockPeople`) keeps alerts going until that date. Only she can set it, and nothing can make it permanent.

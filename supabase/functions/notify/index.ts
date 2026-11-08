@@ -106,9 +106,11 @@ async function famSend(to: string[], kind: string, title: string, body: string) 
   for (const e of to) n += await sendTo(e, { title, body, url: "./", tag: "family-" + kind });
   return n;
 }
+async function famPeople() { return ((await doc("family/people"))?.people || []); }
 async function familyAlerts(now: { date: string; mins: number }, settings: any) {
-  const f = settings?.family, out: string[] = [];
-  if (!f) return out;
+  const out: string[] = [];
+  if (!settings?.family) return out;
+  const f = { ...settings.family, people: await famPeople() };
   const eff = famEff(f, Date.now(), now.date);
   if (!eff.to.length) return out;
   // her button, with or without a message
@@ -157,7 +159,7 @@ Deno.serve(async (req) => {
     const { data } = await sb.auth.getUser(jwt);
     const email = data?.user?.email?.toLowerCase();
     const fam = (await doc("app/settings"))?.family || {};
-    if (!email || ![HER, HIM, ...famEm(fam.people), ...famEm(fam.lockPeople)].includes(email)) return new Response("no", { status: 401, headers: CORS });
+    if (!email || ![HER, HIM, ...famEm(await famPeople()), ...famEm(fam.lockPeople)].includes(email)) return new Response("no", { status: 401, headers: CORS });
     const n = await sendTo(email, { title: "Prapti", body: "Reminders are on. Jay Swaminarayan.", url: "./", tag: "test" });
     return new Response(JSON.stringify({ sent: n }), { headers: { ...CORS, "content-type": "application/json" } });
   }

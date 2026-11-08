@@ -2,13 +2,17 @@
 -- It lets the people Chhaya adds in Me > Family read a short daily summary and get alerts on their phone.
 -- It only adds access rules. It does not change or delete any of her data. Safe to run more than once.
 
+-- Mum and Dad's emails are added separately, with supabase/family-people.sql (so they never go in this public code).
+
 -- Who is this signed-in person to Chhaya's Family settings?
 --   'reader' = she is sharing with them now (or switched off less than 48 hours ago)
 --   'member' = on her list, or covered by her safety lock, but not reading the summary right now
 --   null     = not on her list
 create or replace function public.family_role() returns text language sql stable security definer set search_path = public as $$
   with me as (select lower(coalesce(auth.jwt() ->> 'email', '')) as e),
-       f  as (select coalesce(data -> 'family', '{}'::jsonb) as f from public.docs where id = 'app/settings')
+       f  as (select coalesce(s.data -> 'family', '{}'::jsonb)
+                     || jsonb_build_object('people', coalesce((select data -> 'people' from public.docs where id = 'family/people'), '[]'::jsonb)) as f
+              from (select 1) one left join public.docs s on s.id = 'app/settings')
   select case
     when (select e from me) = '' then null
     when exists (select 1 from f, jsonb_array_elements(coalesce(f.f -> 'people', '[]'::jsonb)) p
