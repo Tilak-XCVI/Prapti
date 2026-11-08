@@ -2,7 +2,7 @@
 const APP_VERSION = '1.2';
 /* Her-facing update log. Tilak's admin changes are deliberately left out. Newest first. */
 const CHANGELOG = [
-  { v: '1.2', date: '', items: [
+  { v: '1.2', date: '2026-11-08', items: [
     'Check in as often as you like: every check-in through the day is now kept, and tapping a day shows how you felt from morning to night.',
     'Backups in Me: a copy of everything is saved every night, and you can keep one in Google Drive.',
     'Family, in Me: share a short summary of your day with Mum and Dad, and they get a gentle alert if you might need them. You choose what they see.',

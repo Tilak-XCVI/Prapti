@@ -821,7 +821,10 @@ const gicon = k => '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" 
 
 /* ---------- state + storage: Supabase, with an offline queue and 3-way field merge ---------- */
 const SB_URL = 'https://pfltodlzcflxqgniznag.supabase.co', SB_KEY = 'sb_publishable_tjEF35iES5TJ0MUNgL_sYw_C9A5C4Xm';
-const OWNER_EMAIL = 'tilak@parmrgroup.com';
+// The owner account is recognised by a short fingerprint of its email, so no address appears in this public code.
+const OWNER_HASH = 'cd785d5a';
+const emailHash = e => { let x = 2166136261; for (const c of String(e || '').toLowerCase()) { x ^= c.charCodeAt(0); x = Math.imul(x, 16777619); } return (x >>> 0).toString(16); };
+const isOwnerEmail = e => emailHash(e) === OWNER_HASH;
 const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'prapti-auth' } });
 const APP_VER = 10;
 /* Tilak's account has two modes: his own test space ('sandbox', saved separately) or Chhaya's app, view only ('hers') */
@@ -861,7 +864,7 @@ function setData(key, v) { const [c, id] = split(key); if (c === 'app') S[id] = 
 function fieldsJ(o) { const r = {}; Object.keys(o || {}).forEach(f => r[f] = J(o[f])); return r; }
 function setSaveState() {}
 function viewOnly() { return !!OWNER && OMODE === 'hers'; }
-function save(key) { if (viewOnly() && !/^(notes|feedback)\//.test(String(key))) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); }
+function save(key) { if (viewOnly() && !/^(notes|feedback)\//.test(String(key))) return; dirty.add(key); cacheLocal(); clearTimeout(flushT); flushT = setTimeout(flush, 500); if (typeof famHook === 'function') famHook(key); }
 async function flush() {
   if (freshStart) return;
   if (viewOnly()) [...dirty].forEach(k => { if (!/^(notes|feedback)\//.test(k)) dirty.delete(k); });
@@ -1313,7 +1316,7 @@ A.ciW = el => { CI.w = el.dataset.w; render(true); };
 A.ciT = el => { const t = el.dataset.t, i = CI.tags.indexOf(t); if (i > -1) CI.tags.splice(i, 1); else CI.tags.push(t); render(true); };
 A.ciOwn = () => { const v = $('#ciOwn').value.trim(); if (!v) return; CI.extraTags.push(v); CI.tags.push(v); render(true); };
 INP.ciNote = el => { CI.note = el.value; };
-A.ciSave = () => { if (!CI.w) return; day().checkins = [{ at: new Date().toTimeString().slice(0, 5), q: CI.q, w: CI.w, tags: CI.tags, note: CI.note }]; save('days/' + TODAY); CI.step = 2; render(); setTimeout(() => { const o = $('.orb'); if (o) { const r = o.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, 18, [QUADS[CI.q].bg, '#F6B48A', '#FFFFFF']); } }, 350); };
+A.ciSave = () => { if (!CI.w) return; day().checkins = (day().checkins || []).concat([{ at: new Date().toTimeString().slice(0, 5), q: CI.q, w: CI.w, tags: CI.tags, note: CI.note }]); save('days/' + TODAY); CI.step = 2; render(); setTimeout(() => { const o = $('.orb'); if (o) { const r = o.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, 18, [QUADS[CI.q].bg, '#F6B48A', '#FFFFFF']); } }, 350); };
 A.ciClose = () => { CI = null; stack = []; go('today', null, { replace: true }); };
 A.ciCalm = () => { CI = null; go('calm', null, { replace: true }); };
 A.ciSafety = () => { CI = null; go('safety', null, { replace: true }); };
@@ -2229,7 +2232,7 @@ function duoTiles(dd) {
   const tile = (a, v, ic, title, sub, due) => '<button class="duo' + (due ? ' due' : '') + '" data-a="' + a + '" data-v="' + v + '"><span class="duoic">' + ic + (due ? '<i class="duedot"></i>' : '') + '</span><span class="col" style="gap:2px;min-width:0"><span class="serif" style="font-size:20px;line-height:1.1">' + title + '</span><span class="small">' + sub + '</span></span></button>';
   const face = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1.8 1.6 5.2 1.6 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>';
   return '<div class="duorow">'
-    + tile('go', 'checkin', face, ciDue ? (reopen ? 'How\'s the afternoon?' : 'How are you?') : (last.q === 'hp' || last.q === 'lp' ? esc(last.w) : 'Checked in'), ciDue ? 'Check in' : 'Tap to change', ciDue)
+    + tile('go', 'checkin', face, ciDue ? (reopen ? 'How\'s the afternoon?' : 'How are you?') : (last.q === 'hp' || last.q === 'lp' ? esc(last.w) : 'Checked in'), ciDue ? 'Check in' : (cs.length > 1 ? cs.length + ' today · ' : '') + 'Check in again', ciDue)
     + tile('go', slDue ? 'sleeplog' : 'sleep', '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + G_ICON.sleep + '</svg>', slLogged ? fmtH(sleepHours(sl)) : 'Sleep', slLogged ? 'last night' : slDue ? 'How did you sleep?' : 'Your nights', slDue)
     + '</div>';
 }
@@ -2241,7 +2244,7 @@ function darshanChip() { const v = todayView(); return '<button class="dchip" da
 V.today = () => {
   const dd = day(), items = todayItems(TODAY), done = items.filter(i => dd.done[i.id]).length, all = items.length > 0 && done === items.length, mode = dd.mode || 'steady';
   const task = i => '<div class="row" style="gap:0;position:relative">'
-    + '<button class="task' + (dd.done[i.id] ? ' done' : '') + (lastTicked === i.id && dd.done[i.id] ? ' just' : '') + (i.sabha ? ' sabha' : '') + '" data-a="tog" data-id="' + esc(i.id) + '" aria-pressed="' + !!dd.done[i.id] + '"><span class="rip"></span><span class="tick">' + (dd.done[i.id] ? I.tick : '') + '</span><span class="tt">' + esc(i.t) + (i.sabha ? '<span class="small" style="display:block;text-decoration:none">' + (dd.done[i.id] ? 'You went. Jay Swaminarayan.' : 'Tap when you\'ve been') + '</span>' : '') + (i.rtms ? '<span class="small" style="display:block">' + (dd.done[i.id] ? 'Counted. ' + S.rtms.sessions.length + ' sessions so far.' : 'Tap when you\'ve been') + '</span>' : '') + '</span></button>'
+    + '<button class="task' + (dd.done[i.id] ? ' done' : '') + (lastTicked === i.id && dd.done[i.id] ? ' just' : '') + (i.sabha ? ' sabha' : '') + '" data-a="tog" data-id="' + esc(i.id) + '" aria-pressed="' + !!dd.done[i.id] + '"><span class="rip"></span><span class="tick">' + (i.sabha ? '<span style="display:flex;color:' + (dd.done[i.id] ? '#fff' : 'var(--faint)') + '">' + monoLotus(17) + '</span>' : dd.done[i.id] ? I.tick : '') + '</span><span class="tt">' + esc(i.t) + (i.sabha ? '<span class="small" style="display:block;text-decoration:none">' + (dd.done[i.id] ? 'You went. Jay Swaminarayan.' : 'Tap when you\'ve been') + '</span>' : '') + (i.rtms ? '<span class="small" style="display:block">' + (dd.done[i.id] ? 'Counted. ' + S.rtms.sessions.length + ' sessions so far.' : 'Tap when you\'ve been') + '</span>' : '') + '</span></button>'
     + (i.first ? '<span class="firsttag">First thing</span>' : '') + (i.extra ? '<button class="xbtn" style="position:absolute;right:10px" data-a="rmExtra" data-id="' + i.id + '" aria-label="Remove ' + esc(i.t) + '">' + I.close + '</button>' : '')
     + '</div>';
   const pin = dd.pin ? '<div class="card" style="background:var(--tint);display:flex;flex-direction:column;gap:6px"><div class="between"><span class="eyebrow">Carry it today</span><button class="link" data-a="unpin" aria-label="Remove">' + I.close + '</button></div><p class="serif" style="font-size:20px;line-height:1.3">' + esc(dd.pin) + '</p></div>' : '';
@@ -2767,10 +2770,10 @@ async function loadActivity() {
 V.activity = () => {
   if (!ACT || Date.now() - ACT.at > 60000) loadActivity().catch(e => toast('Couldn\'t load activity'));
   const rows = Array.from({ length: 14 }, (_, i) => addDays(TODAY, -i)).map(d => {
-    const x = (ACT && ACT.days[d]) || {}, opens = x.opens || [], done = Object.values(x.done || {}).filter(Boolean).length, ci = (x.checkins || [])[0];
+    const x = (ACT && ACT.days[d]) || {}, opens = x.opens || [], done = Object.values(x.done || {}).filter(Boolean).length, cis = x.checkins || [], ci = cis[cis.length - 1];
     const bits = [];
     if (x.begun) bits.push('Started the day');
-    if (ci) bits.push('Checked in' + (ci.q === 'hp' || ci.q === 'lp' ? ' · ' + esc(ci.w) : ''));
+    if (ci) bits.push('Checked in' + (cis.length > 1 ? ' ' + cis.length + ' times' : '') + (ci.q === 'hp' || ci.q === 'lp' ? ' · latest ' + esc(ci.w) : ''));
     if (done) bits.push(done + (done === 1 ? ' task' : ' tasks') + ' done');
     if (x.sleep && x.sleep.bed) bits.push('Sleep logged');
     if (x.mala && (x.mala.done || x.mala.n)) bits.push((x.mala.done ? x.mala.done + (x.mala.done === 1 ? ' mala' : ' malas') : x.mala.n + ' beads'));
@@ -2863,6 +2866,7 @@ V.me = () => {
     + '</section>'
     + '<section class="col"><h2 class="h2" style="margin-bottom:4px">My space</h2>'
     + row('My safety plan', S.safety.people.length ? S.safety.people.length + (S.safety.people.length === 1 ? ' person' : ' people') + ' and your steps' : 'Fill it in on a good day', 'go', 'safety')
+    + row('Family', famSub(), 'go', 'family')
     + row('My darshan photos', ownList().length ? ownList().length + ' added' : 'Add your own photos and quotes', 'go', 'mydarshan')
     + row('Saved darshan', S.saved.darshan.length ? S.saved.darshan.length + ' saved' : 'Tap the heart in Darshan', 'go', 'saved')
     + ((!OWNER || viewOnly()) && notesList().filter(noteLive).length ? row('Notes', notesList().filter(noteLive).length + (notesList().filter(noteLive).length === 1 ? ' note' : ' notes'), 'go', 'notes') : '')
@@ -2872,7 +2876,7 @@ V.me = () => {
     + '<section class="col"><h2 class="h2" style="margin-bottom:4px">App</h2>'
     + row('Appearance', ({ auto: 'Automatic', light: 'Light', dark: 'Dark' })[S.settings.theme || 'auto'], 'themePick')
     + '<div class="setrow" style="cursor:default"><span class="col" style="gap:2px"><span style="font-size:16px;font-weight:600">' + (!navigator.onLine ? 'Offline · saving on this phone' : dirty.size ? 'Saving…' : 'Saved to the cloud ✓') + '</span><span class="small">' + (!navigator.onLine ? 'Everything will upload when you\'re back online.' : dirty.size ? dirty.size + ' change' + (dirty.size === 1 ? '' : 's') + ' waiting to upload' + (lastErr ? ' (' + esc(lastErr) + ')' : '') : 'Everything you add is saved as you go.') + '</span></span></div>'
-    + row('Save a backup file', 'Everything you\'ve written, as a file', 'backupDl')
+    + row('Backups', 'Saved every night · keep a copy in Google Drive', 'bkSheet')
     + row('What\'s new', 'Version ' + APP_VERSION + (S.settings.seenVer !== CHANGELOG[0].v ? ' · new' : ''), 'go', 'whatsnew')
     + (OWNER && !viewOnly() ? '' : row('Send feedback', 'An idea, or something not working', 'fbNew'))
     + row('Something not working?', 'Copy a report if something breaks', 'diag')
@@ -2952,16 +2956,18 @@ async function start() {
   let session = null;
   try { const { data } = await sb.auth.getSession(); session = data.session; } catch (e) {}
   if (!session) { route = null; go('login', null, { replace: true }); return; }
-  if (RECOVERY) { USER = session.user; OWNER = (USER.email || '').toLowerCase() === OWNER_EMAIL; route = null; go('newpw', null, { replace: true }); return; }
+  if (RECOVERY) { USER = session.user; OWNER = isOwnerEmail(USER.email); route = null; go('newpw', null, { replace: true }); return; }
   signedIn(session.user);
 }
 function signedIn(u) {
-  USER = u; OWNER = (u.email || '').toLowerCase() === OWNER_EMAIL;
+  USER = u; OWNER = isOwnerEmail(u.email);
   if (OWNER && !OMODE) { try { ['prapti-state-v1', 'prapti-bases-v1', 'prapti-dirty-v1'].forEach(k => localStorage.removeItem(k)); localStorage.setItem('prapti-owner-mode', 'sandbox'); } catch (e) {} location.reload(); return; }
-  boot(); startSync();
+  if (OWNER) { boot(); startSync(); return; }
+  // family accounts (Me > Family) get their own short view; anyone else opens the app as before
+  roleOf().then(r => { if (r === 'family') famStart(); else { boot(); startSync(); } });
 }
 A.signOut = () => sheet('<span class="h2">Sign out?</span><p class="sub">Your entries stay safe in the cloud. You\'ll need your password to sign back in.</p><div class="row"><button class="btn" data-a="signOutYes">Sign out</button><button class="btn soft" data-a="closeSheet">Stay</button></div>');
-A.signOutYes = async () => { window.scrollTo(0, 0); closeSheet(); await flush(); await sb.auth.signOut(); try { localStorage.removeItem(LS); localStorage.removeItem(LSB); localStorage.removeItem(LSD); } catch (e) {} location.reload(); };
+A.signOutYes = async () => { window.scrollTo(0, 0); closeSheet(); await flush(); await sb.auth.signOut(); try { localStorage.removeItem(LS); localStorage.removeItem(LSB); localStorage.removeItem(LSD); localStorage.removeItem('prapti-role'); localStorage.removeItem('prapti-fam'); localStorage.removeItem('prapti-fampeople'); } catch (e) {} location.reload(); };
 start();
 
 /* ===== Prapti v3: Me analytics, day story, insights, weekly round-up, lifts, self-compassion ===== */
@@ -3054,13 +3060,14 @@ V.daystory = p => {
   const jn = Object.values(S.journal || {}).filter(j => j && !j.deleted && j.date === d), sm = Object.values(S.smruti || {}).filter(x => x && !x.deleted && x.date === d);
   const done = doneNames(d), card = (title, body, bg) => '<section class="card col" style="gap:8px' + (bg ? ';background:' + bg : '') + '"><span class="eyebrow">' + title + '</span>' + body + '</section>';
   let h = '';
-  h += c ? card('How you felt', '<div class="row" style="gap:12px"><span style="width:18px;height:18px;border-radius:9px;background:' + QUADS[c.q].bg + ';flex-shrink:0"></span><span class="serif" style="font-size:26px">' + esc(c.w) + '</span><span class="small" style="margin-left:auto">' + mins(toMins(c.at)) + '</span></div>'
-    + ((c.tags || []).length ? '<div class="chips">' + c.tags.map(t => '<span class="chip" style="min-height:30px;padding:4px 12px;font-size:13px">' + esc(t) + '</span>').join('') + '</div>' : '') + (c.note ? '<p style="font-size:16px;line-height:1.5">' + esc(c.note) + '</p>' : ''))
+  const cks = (dd.checkins || []).slice().sort((x, y) => toMins(x.at) - toMins(y.at));
+  h += cks.length ? card('How you felt' + (cks.length > 1 ? ' through the day' : ''), cks.map((k, i) => '<div class="col" style="gap:6px' + (i ? ';border-top:1px solid var(--line);padding-top:10px' : '') + '"><div class="row" style="gap:12px"><span style="width:18px;height:18px;border-radius:9px;background:' + QUADS[k.q].bg + ';flex-shrink:0"></span><span class="serif" style="font-size:' + (cks.length > 1 ? 22 : 26) + 'px">' + esc(k.w) + '</span><span class="small" style="margin-left:auto">' + mins(toMins(k.at)) + '</span></div>'
+    + ((k.tags || []).length ? '<div class="chips">' + k.tags.map(t => '<span class="chip" style="min-height:30px;padding:4px 12px;font-size:13px">' + esc(t) + '</span>').join('') + '</div>' : '') + (k.note ? '<p style="font-size:16px;line-height:1.5">' + esc(k.note) + '</p>' : '') + '</div>').join(''))
     : card('How you felt', '<p class="sub">No check-in this day.</p>');
   if ((dd.lift || []).length) h += card('What lifted you', '<div class="chips">' + dd.lift.map(t => '<span class="chip on" style="min-height:30px;padding:4px 12px;font-size:13px">' + esc(t) + '</span>').join('') + '</div>');
   if (sl.bed || sl.wakes || (sl.night || []).length) h += card('Sleep', '<div class="grid2"><div class="stat"><b>' + (sh != null ? fmtH(sh) : '–') + '</b><span class="small">asleep' + (sl.bed ? ' · ' + mins(toMins(sl.bed)) + ' to ' + mins(toMins(sl.wake)) : '') + '</span></div><div class="stat"><b>' + (sl.wakes || (sl.night || []).length || 0) + '</b><span class="small">wake-ups</span></div></div>'
     + (sl.rested ? '<span class="small">Felt ' + RESTED[sl.rested - 1].toLowerCase() + ' in the morning' + ((sl.why || []).length ? ' · woke from: ' + sl.why.map(esc).join(', ').toLowerCase() : '') + '</span>' : ''));
-  h += card('Your day' + (dd.mode ? ' · ' + ({ good: 'Good day', steady: 'Steady', hard: 'Hard day' })[dd.mode] : ''), done.length ? '<div class="col">' + done.map(t => '<div class="row" style="gap:10px;padding:6px 0"><span class="tick" style="width:22px;height:22px;border-radius:11px;background:var(--sa);color:#fff;display:flex;align-items:center;justify-content:center">' + I.tick + '</span><span style="font-size:15px">' + esc(t) + '</span></div>').join('') + '</div>' : '<p class="sub">Nothing ticked. Some days are for resting.</p>');
+  h += card('Your day' + (dd.mode ? ' · ' + ({ good: 'Good day', steady: 'Steady', hard: 'Hard day' })[dd.mode] : ''), done.length ? '<div class="col">' + done.map(t => '<div class="row" style="gap:10px;padding:6px 0"><span class="tick" style="width:22px;height:22px;border-radius:11px;background:var(--sa);color:#fff;display:flex;align-items:center;justify-content:center">' + (t === 'Sabha' ? monoLotus(14) : I.tick) + '</span><span style="font-size:15px">' + esc(t) + '</span></div>').join('') + '</div>' : '<p class="sub">Nothing ticked. Some days are for resting.</p>');
   const sat = [];
   if (dd.mala && (dd.mala.done || dd.mala.n)) sat.push(dd.mala.done ? dd.mala.done + (dd.mala.done === 1 ? ' mala' : ' malas') : dd.mala.n + ' beads');
   if ((dd.calm || []).length) sat.push('Calm space ' + dd.calm.filter(x => !String(x).startsWith('after:')).length + '×');
@@ -3189,9 +3196,17 @@ function weeksCard() {
 }
 
 /* ===== Prapti v1.1: teachings library, full history, What's new, health report PDF, Tilak's dashboard ===== */
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.2';
 /* Her-facing update log. Tilak's admin changes are deliberately left out. Newest first. */
 const CHANGELOG = [
+  { v: '1.2', date: '2026-11-08', items: [
+    'Check in as often as you like: every check-in through the day is now kept, and tapping a day shows how you felt from morning to night.',
+    'Backups in Me: a copy of everything is saved every night, and you can keep one in Google Drive.',
+    'Family, in Me: share a short summary of your day with Mum and Dad, and they get a gentle alert if you might need them. You choose what they see.',
+    'A button to let your family know how you\'re feeling, with a few words if you want.',
+    'A safety lock, chosen on a good day, that keeps family alerts going for the months you pick.',
+    'The lotus now marks sabha on Today, in each day\'s story and on your calendar.',
+  ] },
   { v: '1.1', date: '2026-09-29', items: [
     'A teachings library: 178 teachings in 9 themes, with search, picks for how you\'re feeling, and a Completed shelf so new ones come first.',
     'Your week in Prapti: a short story of your week, ready every Sunday evening.',
@@ -3347,8 +3362,8 @@ function feelingsSection() {
   const cs = days.filter(d => d <= TODAY).map(dayCheck).filter(Boolean);
   const mix = {}; cs.forEach(c => mix[c.q] = (mix[c.q] || 0) + 1);
   const words = {}; cs.forEach(c => words[c.w] = (words[c.w] || 0) + 1); const top = Object.keys(words).sort((a, b) => words[b] - words[a]).slice(0, 3);
-  const cell = d => { const c = dayCheck(d), fut = d > TODAY, isT = d === TODAY, had = S.days[d] && (S.days[d].begun || (S.days[d].opens || []).length);
-    return '<button class="fcell' + (isT ? ' today' : '') + '" ' + (fut ? 'disabled' : 'data-a="go" data-v="daystory" data-p=\'{"d":"' + d + '"}\'') + ' aria-label="' + shortDate(d) + (c ? ', ' + esc(c.w) : '') + '" style="' + (c ? 'background:' + QUADS[c.q].bg + ';color:#fff' : fut ? 'opacity:.35' : had ? 'background:var(--pill)' : '') + '">' + (+d.slice(8)) + '</button>'; };
+  const cell = d => { const c = dayCheck(d), fut = d > TODAY, isT = d === TODAY, had = S.days[d] && (S.days[d].begun || (S.days[d].opens || []).length), sab = !!(S.days[d] && S.days[d].done && S.days[d].done.sabha);
+    return '<button class="fcell' + (isT ? ' today' : '') + '" ' + (fut ? 'disabled' : 'data-a="go" data-v="daystory" data-p=\'{"d":"' + d + '"}\'') + ' aria-label="' + shortDate(d) + (c ? ', ' + esc(c.w) : '') + (sab ? ', sabha' : '') + '" style="position:relative;' + (c ? 'background:' + QUADS[c.q].bg + ';color:#fff' : fut ? 'opacity:.35' : had ? 'background:var(--pill)' : '') + '">' + (+d.slice(8)) + (sab ? '<span style="position:absolute;bottom:2px;left:0;right:0;display:flex;justify-content:center;color:' + (c ? '#fff' : 'var(--sa)') + '">' + monoLotus(11) + '</span>' : '') + '</button>'; };
   const arrow = (k, off, lab) => '<button class="iconbtn mnav" data-a="meMon" data-d="' + k + '"' + (off ? ' disabled' : '') + ' aria-label="' + lab + '">' + (k < 0 ? I.back : I.back.replace('<path', '<path transform="rotate(180 12 12)"')) + '</button>';
   return '<section class="card col" style="gap:14px"><div class="between"><span class="serif" style="font-size:22px">How I\'ve been feeling</span><span class="small">Tap a day</span></div>'
     + '<div class="between" style="align-items:center">' + arrow(-1, meMon <= firstMon, 'Previous month') + '<span style="font-size:15px;font-weight:600">' + monLabel(meMon) + '</span>' + arrow(1, meMon >= cur, 'Next month') + '</div>'
@@ -3469,7 +3484,7 @@ async function loadHer() {
   if (d.error) throw d.error;
   const days = {}; (d.data || []).forEach(r => days[r.id.slice(5)] = Object.assign(DAYDEF(r.id.slice(5)), r.data || {}));
   const weekly = {}; (w.data || []).forEach(r => weekly[r.id.slice(7)] = r.data || {});
-  ADM = { days, weekly, settings: Object.assign(DEF().settings, (st.data && st.data.data) || {}), rtms: Object.assign(DEF().rtms, (rt.data && rt.data.data) || {}), logs: (lg.data || []).map(r => r.data).filter(x => x && (x.user || '').toLowerCase() !== OWNER_EMAIL).sort((a, b) => (b.at || '') < (a.at || '') ? -1 : 1), at: Date.now() };
+  ADM = { days, weekly, settings: Object.assign(DEF().settings, (st.data && st.data.data) || {}), rtms: Object.assign(DEF().rtms, (rt.data && rt.data.data) || {}), logs: (lg.data || []).map(r => r.data).filter(x => x && !isOwnerEmail(x.user)).sort((a, b) => (b.at || '') < (a.at || '') ? -1 : 1), at: Date.now() };
   if (route && ['admin', 'report', 'me'].includes(route.v)) render(true);
 }
 function withHer(fn) {
@@ -3481,7 +3496,7 @@ function withHer(fn) {
 function reportData(per) {
   const first = firstDay() || TODAY, from = per === '4w' ? addDays(TODAY, -27) : per === '3m' ? addDays(TODAY, -90) : first;
   const start = from < first ? first : from, ds = []; for (let d = start; d <= TODAY; d = addDays(d, 1)) ds.push(d);
-  const rows = ds.map(d => { const x = S.days[d] || {}, c = dayCheck(d), sl = x.sleep || {}; return { d, c: c ? { w: c.w, q: c.q, mood: moodName(c.q), tags: c.tags || [] } : null, done: doneNames(d).length, sleep: sleepHours(sl), bed: sl.bed || '', wake: sl.wake || '', wakes: sl.wakes != null ? sl.wakes : (sl.night || []).length || (sl.bed ? 0 : null), up: showedUp(d) }; });
+  const rows = ds.map(d => { const x = S.days[d] || {}, c = dayCheck(d), sl = x.sleep || {}; const ws = (x.checkins || []).map(k => k.w).filter(Boolean); return { d, c: c ? { w: ws.length > 1 ? ws.join(', ') : c.w, q: c.q, mood: moodName(c.q) + (ws.length > 1 ? ' (latest)' : ''), tags: c.tags || [] } : null, done: doneNames(d).length, sleep: sleepHours(sl), bed: sl.bed || '', wake: sl.wake || '', wakes: sl.wakes != null ? sl.wakes : (sl.night || []).length || (sl.bed ? 0 : null), up: showedUp(d) }; });
   const wk = Object.keys(S.weekly).sort().filter(k => k >= addDays(start, -6)).map(k => ({ d: k, score: S.weekly[k].score, gad: S.weekly[k].gad, q9: (S.weekly[k].answers || [])[8] }));
   return { from: start, to: TODAY, rows, wk, rtms: S.rtms.sessions.filter(s => s >= start).length, name: 'Chhaya' };
 }
@@ -3591,7 +3606,7 @@ function makePDF(R) {
 
   // 3. Daily table
   heading('Day by day');
-  const dc = [['Date', 30], ['Feeling', 30], ['Mood area', 44], ['Tasks done', 20], ['Sleep', 18], ['Wake-ups', 16], ['About', 20]];
+  const dc = [['Date', 30], ['Feeling', 42], ['Mood area', 32], ['Tasks done', 20], ['Sleep', 18], ['Wake-ups', 16], ['About', 20]];
   tableHead(dc);
   R.rows.slice().reverse().forEach(r => tableRow(dc, [parse(r.d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }), r.c ? r.c.w : '-', r.c ? r.c.mood : '', r.up ? r.done : '-', r.sleep != null ? fmtH(r.sleep) : '-', r.wakes != null ? r.wakes : '-', r.c ? (r.c.tags || []).slice(0, 2).join(', ') : '']));
   function tableHead(cols) { need(12); doc.setFillColor(248, 243, 236); doc.rect(M, y - 4, CW, 6.5, 'F'); doc.setFont('helvetica', 'bold'); doc.setFontSize(8); col(INK); let x = M + 2; cols.forEach(c => { text(c[0], x, y); x += c[1] * CW / cols.reduce((a, b) => a + b[1], 0); }); y += 6; }
@@ -3849,7 +3864,275 @@ A.bkNow = async () => {
   } catch (e) { logErr('backup', e.message || e); toast('Couldn\'t make the backup'); }
 };
 
+/* Backups for Chhaya (Me > App > Backups): the same nightly copies, plus back up now */
+async function bkSheet() {
+  const bk = BK && BK.latest;
+  sheet('<div class="between"><span class="h2">Backups</span>' + closeBtn('closeSheet') + '</div>'
+    + '<p class="sub">Every night a full copy of everything you enter is saved privately. You can also keep a copy in Google Drive.</p>'
+    + (bk ? '<button class="btn" data-a="bkLatest">Save last night\'s backup</button><span class="small" style="text-align:center">From ' + shortDate(bk.date) + '</span>' : BK ? '<p class="small">No nightly backup yet. Use Back up now.</p>' : '<p class="small">Checking for last night\'s backup…</p>')
+    + '<button class="btn soft" data-a="bkNow">Back up now</button>'
+    + '<p class="small">When your phone asks where to save, choose Google Drive, then Prapti App, then 1. Daily backups.</p>');
+}
+A.bkSheet = async () => { bkSheet(); if (!BK || !BK.latest) { await loadBackups(); if ($('.sheet')) bkSheet(); } };
+
+/* ===================== Family (v1.2) =====================
+   Mum and Dad are set once by Tilak in Supabase (doc 'family/people', template supabase/family-people.sql), so their emails
+   never go in this public code. In Me > Family she chooses what they see and the alerts. They sign in with their own account and see only a short summary,
+   which her phone writes to 'family/status'. Alerts are sent by the notify function (supabase/functions/notify).
+   - Switching anything off keeps the old setting working for 48 hours (prev / prevUntil), and they're told at once (changedAt).
+   - The safety lock (lockUntil, lockPeople) keeps alerts going to them until that date, whatever else changes. Only she sets it.
+   - Her button writes 'family/nudge'; anything she writes with it goes in 'family/messages'.
+   - Access rules: supabase/family.sql. Tilak's test space writes to sandbox, so nothing he tries reaches anyone. */
+let FAMILY = false, FAMD = null, FAMD_KEEP = null, famOpenedAt = '', famT = null;
+let FAMPEOPLE = (() => { try { return JSON.parse(localStorage.getItem('prapti-fampeople') || '[]'); } catch (e) { return []; } })();
+async function famPeopleLoad() {
+  if (FAMILY || !USER) return;
+  try { const { data, error } = await sb.from('docs').select('data').eq('id', 'family/people').maybeSingle(); if (error) throw error;
+    FAMPEOPLE = ((data && data.data && data.data.people) || []).filter(p => p && p.email).map(p => ({ name: String(p.name || 'Family').slice(0, 40), email: String(p.email).trim().toLowerCase() }));
+    try { localStorage.setItem('prapti-fampeople', JSON.stringify(FAMPEOPLE)); } catch (e) {}
+    if (route && (route.v === 'family' || route.v === 'me' || route.v === 'today')) render(true);
+  } catch (e) {}
+}
+const FAM_SEE = [['mode', 'My day', 'Good day, Steady or Hard day'], ['opened', 'When I open Prapti', 'And which days this week'], ['checkins', 'Check-ins', 'How many, never what I said'], ['done', 'What I\'ve done', 'My ticked tasks and sabha']];
+const FAM_AL = [['hard', '5 hard days in a row', 'Sent once, at 7pm'], ['quiet', 'Not opened for 5 days', 'Sent once, at 7pm'], ['weekly', 'My weekly check-in', 'If my answer to the last question isn\'t "not at all". They never see my answer.']];
+const FAM_MODE = { good: 'Good day', steady: 'Steady', hard: 'Hard day' };
+const famEm = a => (a || []).map(x => String((x && x.email) || (typeof x === 'string' ? x : '')).trim().toLowerCase()).filter(Boolean);
+const famUniq = a => [...new Set(a)];
+function famCfg() {
+  const f = S.settings.family || {};
+  return { on: !!f.on, onSince: f.onSince || '', people: FAMPEOPLE.slice(), see: Object.assign({ mode: true, opened: true, checkins: true, done: true }, f.see), alerts: Object.assign({ hard: true, quiet: true, weekly: false }, f.alerts), lockUntil: f.lockUntil || '', lockPeople: (f.lockPeople || []).slice(), prev: f.prev || null, prevUntil: f.prevUntil || '', changedAt: f.changedAt || '' };
+}
+// what is actually in force right now (the notify function works this out the same way)
+function famEff(f) {
+  f = f || famCfg();
+  const inPrev = !!(f.prev && f.prevUntil && Date.parse(f.prevUntil) > Date.now()), P = inPrev ? f.prev : {};
+  const on = f.on || (inPrev && !!P.on), locked = !!f.lockUntil && f.lockUntil >= TODAY;
+  const people = famUniq(famEm(f.people).concat(inPrev ? famEm(P.people) : []));
+  const see = {}, alerts = {};
+  FAM_SEE.forEach(([k]) => see[k] = on && (!!f.see[k] || (inPrev && !!(P.see || {})[k])));
+  FAM_AL.forEach(([k]) => alerts[k] = locked || (on && (!!f.alerts[k] || (inPrev && !!(P.alerts || {})[k]))));
+  alerts.button = locked || on;
+  return { on, locked, inPrev, see, alerts, readers: on ? people : [], to: famUniq((on ? people : []).concat(locked ? famEm(f.people).concat(famEm(f.lockPeople)) : [])) };
+}
+function famNames(list) { const n = (list || famCfg().people).map(p => p && p.name).filter(Boolean); return !n.length ? 'your family' : n.length === 1 ? n[0] : n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1]; }
+function famNameOf(email) { const f = famCfg(), all = f.people.concat((f.prev && f.prev.people) || []), p = all.find(x => famEm([x])[0] === email); return p && p.name ? p.name : email; }
+function famSub() { const f = famCfg(), e = famEff(f); if (!f.people.length && !e.locked) return 'Share a short summary with Mum and Dad'; return (e.on ? 'Sharing with ' + esc(famNames(f.people.length ? f.people : null)) : 'Off') + (e.locked ? ' · safety lock on' : ''); }
+const famLong = d => parse(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const famClock = iso => { const d = new Date(iso); return mins(d.getHours() * 60 + d.getMinutes()); };
+const famWhen = iso => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '') + ', ' + famClock(iso);
+const famDay = iso => { const d = new Date(iso); if (isNaN(d)) return ''; if (d.getHours() < 4) d.setDate(d.getDate() - 1); return ymd(d); };
+function famAddMonths(d, n) { const x = parse(d); x.setMonth(x.getMonth() + n); return ymd(x); }
+
+/* ---------- her side: settings ---------- */
+function famSnap(f) { // the setting in force before a change, kept for 48 hours
+  const e = famEff(Object.assign({}, f, { lockUntil: '' })), all = f.people.concat(e.inPrev ? (f.prev.people || []) : []);
+  return { on: e.on, people: famUniq(famEm(all)).map(m => all.find(p => famEm([p])[0] === m)), see: e.see, alerts: { hard: e.alerts.hard, quiet: e.alerts.quiet, weekly: e.alerts.weekly } };
+}
+function famSet(mut) {
+  const before = famCfg(), after = clone(before); mut(after);
+  const lost = famEff(before).on && (!after.on || FAM_SEE.some(([k]) => before.see[k] && !after.see[k]) || FAM_AL.some(([k]) => before.alerts[k] && !after.alerts[k]) || famEm(before.people).some(m => !famEm(after.people).includes(m)));
+  if (lost) { after.prev = famSnap(before); after.prevUntil = new Date(Date.now() + 48 * 36e5).toISOString(); after.changedAt = new Date().toISOString(); }
+  S.settings.family = after; save('settings'); render(true);
+  if (lost) toast('That changes in 48 hours. ' + famNames(before.people) + (before.people.length === 1 ? ' is' : ' are') + ' told now.');
+  return lost;
+}
+V.family = () => {
+  const f = famCfg(), e = famEff(f);
+  const tg = (on, a, k, label) => '<button class="tg' + (on ? '' : ' off') + '" role="switch" aria-checked="' + !!on + '" aria-label="' + label + '" data-a="' + a + '"' + (k ? ' data-k="' + k + '"' : '') + '></button>';
+  const srow = (t, s, ctl, last) => '<div class="setrow" style="cursor:default' + (last ? ';border-bottom:none' : '') + '"><span class="col" style="gap:2px;flex:1"><span style="font-size:16px;font-weight:600">' + t + '</span><span class="small" style="line-height:1.45">' + s + '</span></span>' + ctl + '</div>';
+  const h2 = t => '<h2 class="h2" style="margin:8px 0 -4px">' + t + '</h2>';
+  const lockNames = famUniq(famEm(f.lockPeople)).map(famNameOf);
+  const lockBtns = lab => '<div class="row" style="gap:8px">' + [3, 6, 12].map(m => '<button class="btn soft" style="height:48px;font-size:15px" data-a="famLockAsk" data-m="' + m + '">' + lab(m) + '</button>').join('') + '</div>';
+  const sent = ((S.family && S.family.messages) || {}).items || [];
+  return '<main class="wrap nonav" style="gap:14px"><div class="between"><span class="pill">Family</span>' + closeBtn() + '</div>'
+    + '<h1 class="h1" style="margin-top:6px">Family</h1><p class="sub" style="margin-bottom:6px">Share a short summary of your day with ' + esc(famNames()) + ', and they get a gentle alert if you might need them. You choose what they see.</p>'
+    + '<section class="card" style="padding:0 18px">' + srow('Share with family', f.on ? 'On since ' + (f.onSince ? famLong(f.onSince) : 'today') : e.on ? 'Switching off on ' + famWhen(f.prevUntil) : 'Off', tg(f.on, 'famOn', '', 'Share with family'), true) + '</section>'
+    + (e.inPrev ? '<p class="small" style="line-height:1.5;margin-top:-4px">Your changes take effect on ' + famWhen(f.prevUntil) + '. ' + esc(famNames((f.prev && f.prev.people) || f.people)) + ' were told.</p>' : '')
+    + h2('Who')
+    + '<section class="card" style="padding:0 18px">' + (f.people.length ? f.people.map((p, i) => '<div class="setrow" style="cursor:default' + (i === f.people.length - 1 ? ';border-bottom:none' : '') + '"><span class="col" style="gap:2px;flex:1;min-width:0"><span style="font-size:16px;font-weight:600">' + esc(p.name) + '</span><span class="small" style="overflow-wrap:anywhere">' + esc(p.email) + '</span></span></div>').join('')
+      : '<p class="small" style="padding:16px 0;line-height:1.5">Not set up yet. Tilak is adding Mum and Dad.</p>') + '</section>'
+    + h2('What they see')
+    + '<section class="card" style="padding:0 18px">' + FAM_SEE.map(([k, t, s]) => srow(t, s, tg(f.see[k], 'famSee', k, t))).join('') + '<p class="small" style="padding:12px 0 14px;line-height:1.5">Never your journal, notes, sleep, rTMS or check-in answers.</p></section>'
+    + h2('Alerts')
+    + '<section class="card" style="padding:0 18px"><p class="small" style="padding:14px 0 4px;line-height:1.5">They get "Please check in with Chhaya". It never says why.</p>' + FAM_AL.map(([k, t, s], i) => srow(t, s, tg(f.alerts[k] || e.locked, 'famAl', k, t), i === FAM_AL.length - 1)).join('') + '</section>'
+    + h2('Safety lock')
+    + '<section class="card col" style="gap:12px">' + (e.locked
+      ? '<span class="eyebrow">On until ' + famLong(f.lockUntil) + '</span><p style="font-size:15px;line-height:1.5">Until then, every alert reaches ' + esc(lockNames.length ? (lockNames.length === 1 ? lockNames[0] : lockNames.slice(0, -1).join(', ') + ' and ' + lockNames[lockNames.length - 1]) : famNames()) + ', even if you switch everything else off. Only "Please check in with Chhaya" is sent, never any details.</p>'
+        + (f.lockUntil <= addDays(TODAY, 7) ? '<span class="small">It ends soon. Renew it?</span>' + lockBtns(m => '+' + m + ' months') : '')
+      : '<p style="font-size:15px;line-height:1.5">Chosen on a good day, for a hard one. For the time you pick, alerts keep reaching them even if you switch everything off. It can\'t be undone until it ends.</p>' + lockBtns(m => m + ' months'))
+    + '</section>'
+    + (e.to.length ? '<section class="card col" style="gap:10px;margin-top:8px"><button class="btn" data-a="famNudge">Let ' + esc(famNames()) + ' know</button><span class="small" style="text-align:center;line-height:1.45">Sends them an alert now, with a few words if you want. Also on your Today screen.</span></section>' : '')
+    + (sent.length ? '<section class="card col" style="gap:10px"><span class="eyebrow">What you\'ve sent</span>' + sent.slice(-3).reverse().map(m => '<div class="col" style="gap:2px"><span style="font-size:15px;line-height:1.45">' + esc(m.text) + '</span><span class="small">' + famWhen(m.at) + '</span></div>').join('') + '</section>' : '')
+    + '<button class="link" style="align-self:center;height:44px" data-a="famPreview">See what they see</button>'
+    + '<p class="small" style="text-align:center;line-height:1.5;padding:0 8px">Switching something off takes 48 hours, and they\'re told straight away.</p>'
+    + '</main>';
+};
+A.famOn = () => {
+  const f = famCfg(), e = famEff(f);
+  if (!f.on) { if (!f.people.length) return toast('Not set up yet'); famSet(x => { x.on = true; if (!e.on || !x.onSince) x.onSince = TODAY; }); hap(); return; }
+  sheet('<span class="h2">Switch off sharing?</span><p class="sub">It takes effect in 48 hours, and ' + esc(famNames()) + ' will be told straight away.' + (e.locked ? ' Your safety lock keeps alerts going until ' + famLong(f.lockUntil) + '.' : '') + '</p><div class="row"><button class="btn" data-a="famOffYes">Switch off</button><button class="btn soft" data-a="closeSheet">Keep on</button></div>');
+};
+A.famOffYes = () => { closeSheet(); famSet(x => { x.on = false; }); };
+A.famSee = el => { const k = el.dataset.k; famSet(x => { x.see[k] = !x.see[k]; }); };
+A.famAl = el => {
+  const k = el.dataset.k, f = famCfg();
+  if (famEff(f).locked) return toast('Your safety lock keeps alerts on until ' + famLong(f.lockUntil));
+  if (k === 'weekly' && !f.alerts.weekly) return sheet('<span class="h2">Weekly check-in alert</span><p class="sub">If your answer to the last question in your weekly check-in isn\'t "not at all", ' + esc(famNames()) + ' get "Please check in with Chhaya". They never see your answer or your scores.</p><div class="row"><button class="btn" data-a="famWeeklyYes">Turn on</button><button class="btn soft" data-a="closeSheet">Not now</button></div>');
+  famSet(x => { x.alerts[k] = !x.alerts[k]; });
+};
+A.famWeeklyYes = () => { closeSheet(); famSet(x => { x.alerts.weekly = true; }); };
+A.famLockAsk = el => {
+  const m = +el.dataset.m, f = famCfg(); if (!f.people.length) return toast('Not set up yet');
+  const until = famAddMonths(f.lockUntil && f.lockUntil >= TODAY ? f.lockUntil : TODAY, m);
+  sheet('<span class="h2">Safety lock until ' + famLong(until) + '?</span><p class="sub">Until then, ' + esc(famNames()) + ' will get "Please check in with Chhaya" if you might need them, even if you switch everything else off. That includes your weekly check-in answer. They never see any details. You can\'t undo this until it ends.</p><div class="row"><button class="btn" data-a="famLockYes" data-u="' + until + '">Turn on the lock</button><button class="btn soft" data-a="closeSheet">Not now</button></div>');
+};
+A.famLockYes = el => { closeSheet(); const u = el.dataset.u; famSet(x => { x.lockUntil = u; x.lockPeople = famUniq(famEm(x.lockPeople).concat(famEm(x.people))); }); hap(); toast('Safety lock on until ' + famLong(u)); };
+
+/* ---------- her side: the button, with a few words if she wants ---------- */
+A.famNudge = () => {
+  if (!famEff().to.length) return toast('Switch on Family in Me first');
+  sheet('<div class="between"><span class="h2">Let ' + esc(famNames()) + ' know</span>' + closeBtn('closeSheet') + '</div><p class="sub">They\'ll get an alert to check in with you. You can tell them how you\'re feeling, if you want to.</p>'
+    + '<textarea id="famMsg" rows="3" maxlength="600" placeholder="A few words, if you want" aria-label="Your message" style="width:100%;min-height:96px;border:none;border-radius:16px;background:var(--card);padding:14px;font-family:var(--serif);font-size:19px;line-height:1.4;resize:vertical"></textarea>'
+    + '<button class="btn" data-a="famSend">Send</button>');
+};
+A.famSend = () => {
+  const t = (($('#famMsg') || {}).value || '').trim().slice(0, 600), at = new Date().toISOString();
+  S.family = S.family || {};
+  if (t) { const m = S.family.messages || { items: [] }; m.items = (m.items || []).concat([{ id: uid(), at, text: t }]).slice(-20); S.family.messages = m; save('family/messages'); }
+  S.family.nudge = { at, msg: !!t }; save('family/nudge');
+  closeSheet(); hap(); toast('Sent. They\'ll get it in the next few minutes.'); if (route.v === 'family') render(true);
+};
+function famTodayCard() {
+  if (OWNER && viewOnly()) return '';
+  const f = famCfg(), e = famEff(f); let h = '';
+  if (e.locked && f.lockUntil <= addDays(TODAY, 7)) h += '<button class="card" data-a="go" data-v="family" style="border:none;text-align:left;background:var(--tint);display:flex;gap:12px;align-items:center"><span class="col" style="gap:4px;flex:1"><span class="eyebrow">Safety lock</span><span class="serif" style="font-size:20px;line-height:1.2">Ends on ' + famLong(f.lockUntil) + '. Renew it?</span></span>' + I.right + '</button>';
+  if (e.to.length) h += '<button class="btn soft" data-a="famNudge">Let ' + esc(famNames()) + ' know</button>';
+  return h;
+}
+const _vtF = V.today;
+V.today = p => { const h = _vtF(p), i = h.lastIndexOf('</main>'); return i < 0 ? h : h.slice(0, i) + famTodayCard() + h.slice(i); };
+
+/* ---------- her side: the summary her phone keeps up to date ---------- */
+function famWeek(withSab) { const ws = weekStart(TODAY); return Array.from({ length: 7 }, (_, i) => { const d = addDays(ws, i), x = S.days[d] || {}; return { d, st: d > TODAY ? 'fut' : showedUp(d) ? (withSab && x.done && x.done.sabha ? 'sab' : 'up') : 'miss' }; }); }
+function famStatus(preview) {
+  const f = famCfg(), e = famEff(f); if (!e.on && !preview) return null;
+  const see = preview ? f.see : e.see, dd = S.days[TODAY] || {}, o = { v: 1, today: TODAY, updated: new Date().toISOString() };
+  if (see.opened) { o.opened = famOpenedAt || ((S.family && S.family.status) || {}).opened || ''; o.week = famWeek(see.done); }
+  if (see.mode) o.mode = dd.begun ? (dd.mode || 'steady') : '';
+  if (see.checkins) o.checkins = (dd.checkins || []).length;
+  if (see.done) o.done = Object.keys(dd.done || {}).filter(k => dd.done[k] && k !== 'rtms').map(k => itemName(TODAY, k)).filter(Boolean);
+  return o;
+}
+function famWrite() { if (FAMILY || !USER || !ready || viewOnly()) return; const st = famStatus(); if (!st) return; S.family = S.family || {}; S.family.status = st; save('family/status'); }
+function famHook(key) { if (FAMILY || viewOnly()) return; if (/^days\//.test(key) || key === 'settings') { clearTimeout(famT); famT = setTimeout(famWrite, 3000); } }
+function famOpened() { if (FAMILY || viewOnly()) return; famOpenedAt = new Date().toISOString(); let n = 0; const t = setInterval(() => { if (ready) { clearInterval(t); famWrite(); } else if (++n > 60) clearInterval(t); }, 1000); }
+const _bootF = boot;
+boot = function () { if (FAMILY) { route = null; go('fhome', null, { replace: true }); famLoad(); return; } _bootF(); famOpened(); famPeopleLoad(); };
+const _backF = back;
+back = function (fb) { return _backF(FAMILY ? 'fhome' : fb); };
+document.addEventListener('visibilitychange', () => { if (document.hidden) return; if (FAMILY) famLoad(); else if (USER && famOpenedAt && Date.now() - Date.parse(famOpenedAt) > 3e5) famOpened(); });
+A.famPreview = () => { FAMD_KEEP = FAMD; FAMD = { role: 'reader', status: famStatus(true), alert: null, msgs: ((S.family && S.family.messages) || {}).items || [], loaded: 1 }; go('fhome', { preview: 1 }); };
+
+/* ---------- family accounts: who is signing in? ---------- */
+async function roleOf() {
+  let r = ''; try { r = localStorage.getItem('prapti-role') || ''; } catch (e) {}
+  if (r === 'her' || r === 'family') return r;
+  try {
+    const q = await Promise.race([sb.from('allowed_users').select('email').limit(1), new Promise(res => setTimeout(() => res({ timeout: true }), 6000))]);
+    if (q.timeout || q.error) return 'her';
+    if ((q.data || []).length) { try { localStorage.setItem('prapti-role', 'her'); } catch (e) {} return 'her'; }
+    const f = await sb.rpc('family_role');
+    if (!f.error && f.data) return 'family';
+  } catch (e) {}
+  return 'her'; // anything unclear opens the app exactly as before
+}
+function famStart() {
+  FAMILY = true;
+  try { localStorage.setItem('prapti-role', 'family'); FAMD = JSON.parse(localStorage.getItem('prapti-fam') || 'null'); } catch (e) {}
+  FAMD = FAMD || {}; applyTheme(); route = null; go('fhome', null, { replace: true }); famLoad();
+  setInterval(() => { if (!document.hidden) famLoad(); }, 120000);
+}
+async function famLoad() {
+  if (!FAMILY) return;
+  try {
+    const { data: role, error: e1 } = await sb.rpc('family_role'); if (e1) throw e1;
+    const { data, error } = await sb.from('docs').select('id,data').in('id', ['family/status', 'family/alert', 'family/messages']); if (error) throw error;
+    const g = id => ((data || []).find(x => x.id === id) || {}).data || null;
+    FAMD = { role: role || null, status: g('family/status'), alert: g('family/alert'), msgs: (g('family/messages') || {}).items || [], loaded: Date.now() };
+    try { localStorage.setItem('prapti-fam', JSON.stringify(FAMD)); } catch (e) {}
+  } catch (e) { FAMD = Object.assign({}, FAMD, { err: 1 }); }
+  if (route && /^f(home|alert)$/.test(route.v)) render(true);
+}
+
+/* ---------- family accounts: their screens ---------- */
+function famOpenedLine(s) {
+  if (!s || !s.opened) return '';
+  const d = famDay(s.opened);
+  return d === TODAY ? 'Opened Prapti at ' + famClock(s.opened) : d === addDays(TODAY, -1) ? 'Last opened yesterday at ' + famClock(s.opened) : 'Last opened ' + parse(d).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+const famAlertTitle = k => k === 'changed' ? 'Chhaya changed her updates' : k === 'message' ? 'A message from Chhaya' : 'Please check in with Chhaya';
+V.fhome = p => {
+  p = p || {}; const D = FAMD || {}, s = D.status, pv = !!p.preview, live = !!s && s.today === TODAY;
+  const ol = famOpenedLine(s);
+  let h = '<main class="wrap">' + skyHead('<div class="between"><span class="pill">' + (pv ? 'What they see' : parse(TODAY).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '')) + '</span>' + (pv ? closeBtn('famPreviewClose') : '<span class="pill">Family</span>') + '</div>'
+    + '<div class="col" style="gap:6px;padding-top:14px"><h1 class="h1">Chhaya today</h1>' + (ol && D.role === 'reader' ? '<p class="sub">' + ol + '</p>' : '') + '</div>');
+  const al = D.alert;
+  if (!pv && al && al.at && Date.now() - Date.parse(al.at) < 864e5) h += '<button class="card" data-a="go" data-v="falert" style="border:none;text-align:left;background:var(--tint);display:flex;align-items:center;gap:12px"><span class="col" style="gap:4px;flex:1"><span class="eyebrow">' + (famDay(al.at) === TODAY ? 'Today, ' : '') + famClock(al.at) + '</span><span class="serif" style="font-size:22px;line-height:1.15">' + famAlertTitle(al.kind) + '</span></span>' + I.right + '</button>';
+  const msgs = (D.msgs || []).filter(m => Date.now() - Date.parse(m.at) < 14 * 864e5).slice(-3).reverse();
+  if (msgs.length) h += '<section class="card col" style="gap:12px"><span class="eyebrow">From Chhaya</span>' + msgs.map((m, i) => '<div class="col" style="gap:4px' + (i ? ';border-top:1px solid var(--line);padding-top:12px' : '') + '"><p class="serif" style="font-size:21px;line-height:1.35">' + esc(m.text) + '</p><span class="small">' + famWhen(m.at) + '</span></div>').join('') + '</section>';
+  if (!D.loaded && !s) h += '<p class="sub">Loading…</p>';
+  else if (!D.role) h += '<section class="card col" style="gap:8px"><span class="serif" style="font-size:22px">Not set up yet</span><p class="sub">Chhaya hasn\'t added this account in Prapti. When she does, her updates appear here.</p></section>';
+  else if (D.role !== 'reader' || !s) h += '<section class="card col" style="gap:8px"><span class="serif" style="font-size:22px">Updates are paused</span><p class="sub">Chhaya isn\'t sharing her daily summary right now.</p></section>';
+  else {
+    const tile = (ic, t, sub) => '<div class="duo" style="cursor:default"><span class="duoic">' + ic + '</span><span class="col" style="gap:2px;min-width:0"><span class="serif" style="font-size:20px;line-height:1.1">' + t + '</span><span class="small">' + sub + '</span></span></div>';
+    const face = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1.8 1.6 5.2 1.6 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>';
+    const tiles = ('mode' in s ? tile(I.today, live && s.mode ? FAM_MODE[s.mode] || 'Steady' : 'Not yet', 'Her day') : '') + ('checkins' in s ? tile(face, live && s.checkins ? 'Checked in' : 'Not yet', live && s.checkins ? s.checkins + ' today' : 'Check-ins') : '');
+    if (tiles) h += '<div class="duorow">' + tiles + '</div>';
+    if ('done' in s) h += '<section class="card col" style="gap:8px"><span class="eyebrow">What she\'s done</span>' + (live && (s.done || []).length ? '<div class="col">' + s.done.map(t => '<div class="row" style="gap:10px;padding:6px 0"><span style="width:22px;height:22px;border-radius:11px;background:var(--sa);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">' + (t === 'Sabha' ? monoLotus(14) : I.tick) + '</span><span style="font-size:15px">' + esc(t) + '</span></div>').join('') + '</div>' : '<p class="sub">Nothing ticked yet today.</p>') + '</section>';
+    if (s.week) {
+      const ws = weekStart(TODAY), wk = Array.from({ length: 7 }, (_, i) => { const d = addDays(ws, i), x = s.week.find(w => w.d === d); return { d, st: x && !(x.st === 'fut' && d <= TODAY) ? x.st : d > TODAY ? 'fut' : 'miss' }; });
+      const n = wk.filter(w => w.st === 'up' || w.st === 'sab').length;
+      h += '<section class="card col" style="gap:14px"><div class="between"><span class="serif" style="font-size:22px">This week</span><span class="small">' + (n ? n + (n === 1 ? ' day' : ' days') + ' she showed up' : 'A fresh week') + '</span></div><div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">'
+        + wk.map((w, i) => '<div class="col" style="align-items:center;gap:6px"><span style="font-size:12px;font-weight:600;color:' + (w.d === TODAY ? 'var(--saT)' : 'var(--faint)') + '">' + 'MTWTFSS'[i] + '</span><span style="width:32px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;box-sizing:border-box;' + (w.st === 'sab' ? 'background:var(--sa)' : w.st === 'up' ? 'background:var(--peach)' : w.st === 'fut' ? 'border:1.5px dashed #DCCBB8' : 'background:var(--line)') + '">' + (w.st === 'sab' ? monoLotus(18) : '') + '</span></div>').join('')
+        + '</div>' + ('done' in s ? '<span class="small">The lotus marks sabha.</span>' : '') + '</section>';
+    }
+  }
+  if (!pv && D.role && pushState() !== 'granted') h += '<button class="card" data-a="go" data-v="fsetup" style="border:none;text-align:left;display:flex;align-items:center;gap:12px"><span class="col" style="gap:4px;flex:1"><span class="serif" style="font-size:20px">Turn on alerts</span><span class="small">So your phone tells you if Chhaya might need you</span></span>' + I.right + '</button>';
+  h += '<p class="small" style="text-align:center;padding-top:4px">A short summary Chhaya chose to share.</p>';
+  if (!pv) h += '<button class="link" style="align-self:center;height:44px;color:var(--faint);font-weight:500" data-a="famSignOut">Sign out</button>';
+  return h + '</main>';
+};
+A.famPreviewClose = () => { FAMD = FAMD_KEEP; back(); };
+V.falert = () => {
+  const D = FAMD || {}, al = D.alert || {}, k = al.kind, m = (D.msgs || []).slice(-1)[0];
+  return '<main class="wrap nonav" style="gap:14px"><div class="between"><span class="pill">' + (al.at ? (famDay(al.at) === TODAY ? 'Today, ' : famWhen(al.at).split(',')[0] + ', ') + famClock(al.at) : 'Alert') + '</span>' + closeBtn() + '</div>'
+    + '<h1 class="h1" style="margin-top:6px">' + famAlertTitle(k) + '</h1>'
+    + (k === 'message' && m ? '<section class="card col" style="gap:6px"><p class="serif" style="font-size:22px;line-height:1.35">' + esc(m.text) + '</p><span class="small">' + famWhen(m.at) + '</span></section>'
+      : '<p class="sub">' + (k === 'changed' ? 'She has switched off some of what she shares. Please check in with her.' : k === 'nudge' ? 'She asked Prapti to let you know.' : 'She may be having a tough time.') + '</p>')
+    + '<section class="card col" style="gap:10px"><span class="eyebrow">If you\'re worried about her safety</span><a class="btn" href="tel:999">Call 999</a><a class="btn soft" href="tel:116123">Samaritans: 116 123</a><span class="small">Samaritans are free to call, day or night.</span></section>'
+    + '<button class="btn soft" data-a="back">See her day</button></main>';
+};
+V.fsetup = () => {
+  const st = pushState(), step = (n, t, s) => '<div class="setrow" style="cursor:default"><span style="width:32px;height:32px;border-radius:16px;background:var(--pill);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">' + n + '</span><span class="col" style="gap:2px;flex:1"><span style="font-size:16px;font-weight:600">' + t + '</span><span class="small" style="line-height:1.45">' + s + '</span></span></div>';
+  return '<main class="wrap nonav" style="gap:14px"><div class="between"><span class="pill">One-time set-up</span>' + closeBtn() + '</div>'
+    + '<h1 class="h1" style="margin-top:6px">Turn on alerts</h1><p class="sub">So your phone tells you if Chhaya might need you.</p>'
+    + '<section class="card" style="padding:0 18px">' + step(1, 'Add to your home screen', 'iPhone: Share, then Add to Home Screen. Android: the three dots, then Install app.') + step(2, 'Open Prapti from the icon', 'Alerts only work from the home screen icon.') + step(3, 'Allow notifications', 'Tap the button below, then Allow.') + '</section>'
+    + (st === 'denied' ? '<p class="small" style="line-height:1.5">Notifications are blocked for Prapti. Allow them in your phone\'s Settings, then come back.</p>' : '')
+    + '<button class="btn" data-a="famPush">Allow notifications</button><button class="btn soft" data-a="back">Later</button></main>';
+};
+A.famPush = async () => {
+  if (!pushOK()) return toast(standalone() ? 'This phone needs an update for alerts' : 'Open Prapti from your home screen first');
+  let perm; try { perm = await Notification.requestPermission(); } catch (e) { perm = 'denied'; }
+  if (perm !== 'granted') return toast('Alerts are off. You can allow them in Settings, Notifications, Prapti.');
+  try { await saveSub(); hap(); toast('Alerts on'); back(); } catch (e) { logErr('push-sub', e.message || e); toast('Couldn\'t turn alerts on. Try again in a moment.'); }
+};
+A.famSignOut = () => sheet('<span class="h2">Sign out?</span><p class="sub">You won\'t get alerts on this phone until you sign back in.</p><div class="row"><button class="btn" data-a="famSignOutYes">Sign out</button><button class="btn soft" data-a="closeSheet">Stay</button></div>');
+A.famSignOutYes = async () => {
+  try { if (pushOK()) { const reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription(); if (sub) { await sb.from('push_subs').delete().eq('endpoint', sub.endpoint); await sub.unsubscribe(); } } } catch (e) {}
+  A.signOutYes();
+};
+
 </script>
-<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=c0540317').catch(() => {}));</script>
+<script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=d786836b').catch(() => {}));</script>
 </body>
 </html>
